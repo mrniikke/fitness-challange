@@ -127,6 +127,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      is_group_admin_or_owner: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
