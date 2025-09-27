@@ -170,7 +170,7 @@ const SwipeableGroupCard = ({ group, onSelect, onLeave, onCopyInvite }: Swipeabl
           )}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Daily Goal: {group.daily_goal} push-ups
+              Challenges: {group.challenges?.length || 0}
             </span>
             <div className="flex items-center gap-1">
               <Button

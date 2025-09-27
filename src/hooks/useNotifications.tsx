@@ -101,13 +101,12 @@ export const useNotifications = (currentGroupId?: string) => {
           // Get group info
           const { data: group } = await supabase
             .from('groups')
-            .select('name, daily_goal')
+            .select('name')
             .eq('id', currentGroupId)
             .single();
 
           const userName = profile?.display_name || profile?.username || 'Someone';
           const groupName = group?.name || 'Group';
-          const dailyGoal = group?.daily_goal || 200;
 
           let notification: GroupNotification | null = null;
 
@@ -122,8 +121,8 @@ export const useNotifications = (currentGroupId?: string) => {
               type: 'goal_completed',
               title: isFirstFinisher ? '🎉 First to finish!' : '✅ Goal completed!',
               message: isFirstFinisher 
-                ? `${userName} is the first to complete today's ${dailyGoal} push-ups!`
-                : `${userName} completed today's goal of ${dailyGoal} push-ups!`,
+                ? `${userName} is the first to complete a challenge today!`
+                : `${userName} completed a challenge!`,
               timestamp: new Date(),
               groupId: currentGroupId,
               groupName,
@@ -139,8 +138,8 @@ export const useNotifications = (currentGroupId?: string) => {
             notification = {
               id: Date.now().toString(),
               type: 'pushups_logged',
-              title: 'Push-ups logged',
-              message: `${userName} logged ${addedPushups} push-ups (total: ${pushups})`,
+              title: 'Progress logged',
+              message: `${userName} logged ${addedPushups} progress (total: ${pushups})`,
               timestamp: new Date(),
               groupId: currentGroupId,
               groupName,

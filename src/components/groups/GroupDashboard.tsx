@@ -17,10 +17,10 @@ import NotificationPanel from "../notifications/NotificationPanel";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
-  const { groups, currentGroup, members, loading, selectGroup, refreshGroups, logPushups, leaveGroup } = useGroups();
+  const { groups, currentGroup, members, loading, challenges, selectGroup, refreshGroups, logPushups, leaveGroup } = useGroups();
   const { notifications, clearNotifications, removeNotification } = useNotifications(currentGroup?.id);
   const [showGroupList, setShowGroupList] = useState(true);
-  const [pushupInput, setPushupInput] = useState("");
+  const [pushupInputs, setPushupInputs] = useState<{[challengeId: string]: string}>({});
   const [isLogging, setIsLogging] = useState(false);
   const { toast } = useToast();
 
@@ -66,31 +66,32 @@ const GroupDashboard = () => {
     }
   };
 
-  const handleLogPushups = async () => {
-    if (!currentGroup || !pushupInput.trim()) return;
+  const handleLogPushups = async (challengeId: string) => {
+    if (!currentGroup || !pushupInputs[challengeId]?.trim()) return;
     
-    const pushups = parseInt(pushupInput);
+    const pushups = parseInt(pushupInputs[challengeId]);
     if (isNaN(pushups) || pushups < 0) {
       toast({
         title: "Invalid input",
-        description: "Please enter a valid number of push-ups.",
+        description: "Please enter a valid number.",
         variant: "destructive",
       });
       return;
     }
 
     setIsLogging(true);
-    const success = await logPushups(currentGroup.id, pushups);
+    const success = await logPushups(currentGroup.id, challengeId, pushups);
     
     if (success) {
+      const challenge = challenges.find(c => c.id === challengeId);
       toast({
-        title: "Push-ups logged!",
-        description: `Successfully logged ${pushups} push-ups for today.`,
+        title: "Progress logged!",
+        description: `Successfully logged ${pushups} for ${challenge?.name || 'challenge'}.`,
       });
-      setPushupInput("");
+      setPushupInputs(prev => ({ ...prev, [challengeId]: "" }));
     } else {
       toast({
-        title: "Failed to log push-ups",
+        title: "Failed to log progress",
         description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
@@ -263,33 +264,40 @@ const GroupDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Log Push-ups Section */}
-        <Card className="border-0 bg-gradient-card shadow-medium">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Log Your Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                placeholder="Enter progress count"
-                value={pushupInput}
-                onChange={(e) => setPushupInput(e.target.value)}
-                min="0"
-              />
-              <Button 
-                onClick={handleLogPushups}
-                disabled={isLogging || !pushupInput.trim()}
-                className="min-w-[100px]"
-              >
-                {isLogging ? "Logging..." : "Log"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Log Progress Section */}
+        <div className="space-y-4">
+          {challenges.map((challenge) => (
+            <Card key={challenge.id} className="border-0 bg-gradient-card shadow-medium">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Log Your Progress - {challenge.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder={`Enter ${challenge.name.toLowerCase()} count`}
+                    value={pushupInputs[challenge.id] || ''}
+                    onChange={(e) => setPushupInputs(prev => ({ ...prev, [challenge.id]: e.target.value }))}
+                    min="0"
+                  />
+                  <Button 
+                    onClick={() => handleLogPushups(challenge.id)}
+                    disabled={isLogging || !pushupInputs[challenge.id]?.trim()}
+                    className="min-w-[100px]"
+                  >
+                    {isLogging ? "Logging..." : "Log"}
+                  </Button>
+                </div>
+                <div className="mt-2 text-sm text-muted-foreground">
+                  Daily Goal: {challenge.goal_amount}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
 
         {/* Members Progress */}
@@ -304,7 +312,8 @@ const GroupDashboard = () => {
             <div className="space-y-4">
               {members.map((member) => {
                 const todayPushups = member.todayPushups || 0;
-                const progressPercentage = Math.min((todayPushups / currentGroup.daily_goal) * 100, 100);
+                const totalGoal = challenges.reduce((sum, challenge) => sum + challenge.goal_amount, 0);
+                const progressPercentage = Math.min((todayPushups / Math.max(totalGoal, 1)) * 100, 100);
                 const isCurrentUser = member.user_id === user?.id;
                 
                 return (
@@ -342,9 +351,9 @@ const GroupDashboard = () => {
                      </div>
                     <Progress value={progressPercentage} className="h-2" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{todayPushups} / {currentGroup.daily_goal}</span>
+                      <span>{todayPushups} / {totalGoal}</span>
                       <span>
-                        {currentGroup.daily_goal - todayPushups > 0 ? `${currentGroup.daily_goal - todayPushups} remaining` : "Goal reached! 🎉"}
+                        {totalGoal - todayPushups > 0 ? `${totalGoal - todayPushups} remaining` : "Goal reached! 🎉"}
                       </span>
                     </div>
                   </div>

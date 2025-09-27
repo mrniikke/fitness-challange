@@ -1,25 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
+import { Plus, X } from "lucide-react";
 
-const groupSchema = z.object({
-  name: z.string().min(2, "Group name must be at least 2 characters"),
-  description: z.string().optional(),
-  dailyGoal: z.number().min(1, "Daily goal must be at least 1 push-up").max(1000, "Daily goal cannot exceed 1000 push-ups"),
-});
+interface Challenge {
+  name: string;
+  goal_amount: number;
+}
 
 interface CreateGroupDialogProps {
   onGroupCreated?: () => void;
@@ -29,89 +22,107 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [dailyGoal, setDailyGoal] = useState("200");
+  const [challenges, setChallenges] = useState<Challenge[]>([{ name: "", goal_amount: 0 }]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+  const addChallenge = () => {
+    if (challenges.length < 5) {
+      setChallenges([...challenges, { name: "", goal_amount: 0 }]);
+    }
+  };
+
+  const removeChallenge = (index: number) => {
+    if (challenges.length > 1) {
+      setChallenges(challenges.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateChallenge = (index: number, field: keyof Challenge, value: string | number) => {
+    const updated = challenges.map((challenge, i) => 
+      i === index ? { ...challenge, [field]: value } : challenge
+    );
+    setChallenges(updated);
+  };
+
+  const handleSubmit = async () => {
+    if (!user || !name.trim()) return;
+
+    // Validate challenges
+    const validChallenges = challenges.filter(c => c.name.trim() && c.goal_amount > 0);
+    if (validChallenges.length === 0) {
+      toast({
+        title: "Invalid challenges",
+        description: "Please add at least one challenge with a name and goal.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
+    
     try {
-      const dailyGoalNumber = parseInt(dailyGoal) || 200;
-      const validationData = { 
-        name, 
-        description: description || undefined,
-        dailyGoal: dailyGoalNumber 
-      };
-      groupSchema.parse(validationData);
-
-      console.log('Creating group with user ID:', user.id);
-
-      // Generate invite code (client-side)
-      const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-
+      // Generate invite code
+      const { data: inviteData, error: inviteError } = await supabase.rpc('generate_invite_code');
+      
+      if (inviteError) throw inviteError;
+      
       // Create group
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
         .insert({
-          name,
-          description: description || null,
-          daily_goal: dailyGoalNumber,
-          invite_code: inviteCode,
+          name: name.trim(),
+          description: description.trim() || null,
           created_by: user.id,
+          invite_code: inviteData
         })
         .select()
         .single();
 
-      if (groupError) {
-        console.error('Group creation error:', groupError);
-        throw groupError;
-      }
+      if (groupError) throw groupError;
 
-      console.log('Group created:', groupData);
+      // Create challenges
+      const challengeInserts = validChallenges.map(challenge => ({
+        group_id: groupData.id,
+        name: challenge.name.trim(),
+        goal_amount: challenge.goal_amount
+      }));
+
+      const { error: challengesError } = await supabase
+        .from('group_challenges')
+        .insert(challengeInserts);
+
+      if (challengesError) throw challengesError;
 
       // Add creator as admin member
       const { error: memberError } = await supabase
         .from('group_members')
         .insert({
-          group_id: groupData.id,
           user_id: user.id,
-          role: 'admin',
+          group_id: groupData.id,
+          role: 'admin'
         });
 
-      if (memberError) {
-        console.error('Member creation error:', memberError);
-        throw memberError;
-      }
+      if (memberError) throw memberError;
 
       toast({
         title: "Group created!",
-        description: `Your group "${name}" has been created with a daily goal of ${dailyGoalNumber} push-ups. Invite code: ${inviteCode}`,
+        description: `Successfully created "${name}" with ${validChallenges.length} challenge${validChallenges.length > 1 ? 's' : ''}.`,
       });
-
+      
       setName("");
       setDescription("");
-      setDailyGoal("200");
+      setChallenges([{ name: "", goal_amount: 0 }]);
       setOpen(false);
       onGroupCreated?.();
     } catch (error) {
-      console.error('Full error:', error);
-      if (error instanceof z.ZodError) {
-        toast({
-          variant: "destructive",
-          title: "Validation error",
-          description: error.issues[0].message,
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error creating group",
-          description: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
+      console.error('Error creating group:', error);
+      toast({
+        title: "Failed to create group",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -120,15 +131,16 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button className="w-full">
+          <Plus className="h-4 w-4 mr-2" />
           Create Group
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create a New Group</DialogTitle>
+          <DialogTitle>Create New Group</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Group Name</Label>
             <Input
@@ -136,7 +148,6 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter group name"
-              required
             />
           </div>
           
@@ -146,32 +157,65 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your group's challenge"
+              placeholder="Enter group description"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dailyGoal">Daily Push-up Goal</Label>
-            <Input
-              id="dailyGoal"
-              type="number"
-              value={dailyGoal}
-              onChange={(e) => setDailyGoal(e.target.value)}
-              placeholder="200"
-              min="1"
-              max="1000"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Set how many push-ups each member should aim for daily (1-1000)
-            </p>
+            <div className="flex items-center justify-between">
+              <Label>Challenges ({challenges.length}/5)</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addChallenge}
+                disabled={challenges.length >= 5}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
+            
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {challenges.map((challenge, index) => (
+                <div key={index} className="flex gap-2 items-start p-2 border rounded-lg">
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      placeholder="Challenge name (e.g., Push-ups)"
+                      value={challenge.name}
+                      onChange={(e) => updateChallenge(index, 'name', e.target.value)}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Daily goal"
+                      value={challenge.goal_amount || ''}
+                      onChange={(e) => updateChallenge(index, 'goal_amount', parseInt(e.target.value) || 0)}
+                      min="1"
+                    />
+                  </div>
+                  {challenges.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeChallenge(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button 
+            onClick={handleSubmit} 
+            className="w-full"
+            disabled={loading || !name.trim()}
+          >
             {loading ? "Creating..." : "Create Group"}
           </Button>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

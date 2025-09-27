@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      group_challenges: {
+        Row: {
+          created_at: string
+          goal_amount: number
+          group_id: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          goal_amount: number
+          group_id: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          goal_amount?: number
+          group_id?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_challenges_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           group_id: string
@@ -57,7 +92,6 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
-          daily_goal: number
           description: string | null
           id: string
           invite_code: string
@@ -67,7 +101,6 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
-          daily_goal?: number
           description?: string | null
           id?: string
           invite_code: string
@@ -77,7 +110,6 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
-          daily_goal?: number
           description?: string | null
           id?: string
           invite_code?: string
@@ -123,6 +155,7 @@ export type Database = {
       }
       pushup_logs: {
         Row: {
+          challenge_id: string | null
           completed_at: string | null
           created_at: string
           group_id: string
@@ -134,6 +167,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          challenge_id?: string | null
           completed_at?: string | null
           created_at?: string
           group_id: string
@@ -145,6 +179,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          challenge_id?: string | null
           completed_at?: string | null
           created_at?: string
           group_id?: string
@@ -155,7 +190,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_challenge_id"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "group_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

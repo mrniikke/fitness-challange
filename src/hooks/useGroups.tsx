@@ -10,9 +10,18 @@ export interface Group {
   created_by: string;
   created_at: string;
   updated_at: string;
-  daily_goal: number;
   role?: 'admin' | 'member';
   member_count?: number;
+  challenges?: GroupChallenge[];
+}
+
+export interface GroupChallenge {
+  id: string;
+  group_id: string;
+  name: string;
+  goal_amount: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GroupMember {
@@ -33,6 +42,7 @@ export interface PushupLog {
   id: string;
   user_id: string;
   group_id: string;
+  challenge_id?: string | null;
   pushups: number;
   log_date: string;
   created_at: string;
@@ -46,6 +56,7 @@ export const useGroups = () => {
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [pushupLogs, setPushupLogs] = useState<PushupLog[]>([]);
+  const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -65,8 +76,7 @@ export const useGroups = () => {
             invite_code,
             created_by,
             created_at,
-            updated_at,
-            daily_goal
+            updated_at
           )
         `)
         .eq('user_id', user.id);
@@ -105,6 +115,17 @@ export const useGroups = () => {
 
       if (error) throw error;
       
+      // Fetch group challenges
+      const { data: challengesData, error: challengesError } = await supabase
+        .from('group_challenges')
+        .select('*')
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: true });
+
+      if (challengesError) throw challengesError;
+      
+      setChallenges(challengesData || []);
+      
       // Fetch today's push-up logs for all members with completion data
       const today = new Date().toISOString().split('T')[0];
       const { data: logsData, error: logsError } = await supabase
@@ -117,9 +138,8 @@ export const useGroups = () => {
 
       setPushupLogs(logsData || []);
 
-      // Get current group to check daily goal
-      const currentGroupData = groups.find(g => g.id === groupId) || currentGroup;
-      const dailyGoal = currentGroupData?.daily_goal || 200;
+      // Calculate total goal across all challenges
+      const totalGoal = (challengesData || []).reduce((sum, challenge) => sum + challenge.goal_amount, 0);
 
       // Get current time for checking if day has ended (simplified to just check if it's past midnight)
       const now = new Date();
@@ -127,23 +147,32 @@ export const useGroups = () => {
 
       // Combine member data with push-up data and completion status
       const membersWithPushups = (data || []).map(member => {
-        const log = logsData?.find(log => log.user_id === member.user_id);
-        const todayPushups = log?.pushups || 0;
+        const memberLogs = logsData?.filter(log => log.user_id === member.user_id) || [];
+        const todayPushups = memberLogs.reduce((sum, log) => sum + log.pushups, 0);
         
         let completionStatus: 'completed' | 'failed' | 'pending' = 'pending';
         
-        if (log?.completed_at) {
+        // Check if user completed all challenges
+        const completedChallenges = (challengesData || []).filter(challenge => {
+          const challengeLog = memberLogs.find(log => log.challenge_id === challenge.id);
+          return challengeLog && challengeLog.completed_at;
+        });
+        
+        if (completedChallenges.length === (challengesData?.length || 0) && (challengesData?.length || 0) > 0) {
           completionStatus = 'completed';
-        } else if (dayEnded && todayPushups < dailyGoal) {
+        } else if (dayEnded && todayPushups < totalGoal) {
           completionStatus = 'failed';
         }
+        
+        // Check if this user was first to complete all challenges
+        const isFirstFinisher = memberLogs.some(log => log.is_first_finisher);
         
         return {
           ...member,
           role: member.role as 'admin' | 'member',
           todayPushups,
           completionStatus,
-          isFirstFinisher: log?.is_first_finisher || false
+          isFirstFinisher
         };
       });
 
@@ -153,15 +182,15 @@ export const useGroups = () => {
     }
   };
 
-  const logPushups = async (groupId: string, pushups: number) => {
+  const logPushups = async (groupId: string, challengeId: string, pushups: number) => {
     if (!user) return false;
 
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Get the current group to check daily goal
-      const currentGroupData = groups.find(g => g.id === groupId);
-      if (!currentGroupData) return false;
+      // Get the challenge to check goal
+      const challenge = challenges.find(c => c.id === challengeId);
+      if (!challenge) return false;
       
       // Get existing log
       const { data: existingLog } = await supabase
@@ -169,32 +198,34 @@ export const useGroups = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('group_id', groupId)
+        .eq('challenge_id', challengeId)
         .eq('log_date', today)
         .maybeSingle();
 
       const previousPushups = existingLog?.pushups || 0;
       const newTotalPushups = previousPushups + pushups;
-      const dailyGoal = currentGroupData.daily_goal;
+      const goalAmount = challenge.goal_amount;
       
-      // Check if user just completed their goal
-      const justCompletedGoal = previousPushups < dailyGoal && newTotalPushups >= dailyGoal;
+      // Check if user just completed this challenge
+      const justCompletedChallenge = previousPushups < goalAmount && newTotalPushups >= goalAmount;
       
       let completedAt = existingLog?.completed_at;
       let isFirstFinisher = existingLog?.is_first_finisher || false;
       
-      if (justCompletedGoal) {
+      if (justCompletedChallenge) {
         completedAt = new Date().toISOString();
         
-        // Check if this is the first completion in the group today
+        // Check if this is the first completion for this challenge today
         const { data: otherCompletions } = await supabase
           .from('pushup_logs')
           .select('id, completed_at')
           .eq('group_id', groupId)
+          .eq('challenge_id', challengeId)
           .eq('log_date', today)
           .not('completed_at', 'is', null)
           .order('completed_at', { ascending: true });
         
-        // If no other completions exist, this user is the first finisher
+        // If no other completions exist, this user is the first finisher for this challenge
         isFirstFinisher = (otherCompletions?.length || 0) === 0;
       }
 
@@ -217,6 +248,7 @@ export const useGroups = () => {
           .insert({
             user_id: user.id,
             group_id: groupId,
+            challenge_id: challengeId,
             pushups: newTotalPushups,
             log_date: today,
             completed_at: completedAt,
@@ -277,6 +309,7 @@ export const useGroups = () => {
     currentGroup,
     members,
     pushupLogs,
+    challenges,
     loading,
     selectGroup,
     refreshGroups,
