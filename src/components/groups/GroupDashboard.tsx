@@ -11,10 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import CreateGroupDialog from "./CreateGroupDialog";
 import JoinGroupDialog from "./JoinGroupDialog";
 import InviteButton from "./InviteButton";
+import SwipeableGroupCard from "./SwipeableGroupCard";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
-  const { groups, currentGroup, members, loading, selectGroup, refreshGroups, logPushups } = useGroups();
+  const { groups, currentGroup, members, loading, selectGroup, refreshGroups, logPushups, leaveGroup } = useGroups();
   const [showGroupList, setShowGroupList] = useState(true);
   const [pushupInput, setPushupInput] = useState("");
   const [isLogging, setIsLogging] = useState(false);
@@ -43,6 +44,23 @@ const GroupDashboard = () => {
   const selectGroupAndHideList = (group: any) => {
     selectGroup(group);
     setShowGroupList(false);
+  };
+
+  const handleLeaveGroup = async (groupId: string) => {
+    const result = await leaveGroup(groupId);
+    
+    if (result.success) {
+      toast({
+        title: "Left group successfully",
+        description: "You have been removed from the group.",
+      });
+    } else {
+      toast({
+        title: "Failed to leave group",
+        description: result.error || "Something went wrong.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLogPushups = async () => {
@@ -150,56 +168,13 @@ const GroupDashboard = () => {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {groups.map((group) => (
-                  <Card 
-                    key={group.id} 
-                    className="cursor-pointer transition-all hover:shadow-lg border-0 bg-gradient-card shadow-medium"
-                    onClick={() => selectGroupAndHideList(group)}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{group.name}</CardTitle>
-                        <Badge variant={group.role === 'admin' ? 'default' : 'secondary'}>
-                          {group.role === 'admin' ? (
-                            <><Crown className="h-3 w-3 mr-1" /> Admin</>
-                          ) : (
-                            <><User className="h-3 w-3 mr-1" /> Member</>
-                          )}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {group.description && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {group.description}
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Invite: {group.invite_code}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyInviteCode(group.invite_code);
-                            }}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <InviteButton 
-                              groupName={group.name}
-                              inviteCode={group.invite_code}
-                              variant="ghost"
-                              size="sm"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <SwipeableGroupCard
+                    key={group.id}
+                    group={group}
+                    onSelect={selectGroupAndHideList}
+                    onLeave={handleLeaveGroup}
+                    onCopyInvite={copyInviteCode}
+                  />
                 ))}
               </div>
             )}

@@ -177,6 +177,28 @@ export const useGroups = () => {
     fetchGroupMembers(group.id);
   };
 
+  const leaveGroup = async (groupId: string) => {
+    if (!user) return { success: false, error: 'Not authenticated' };
+
+    try {
+      const { error } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('group_id', groupId);
+
+      if (error) throw error;
+
+      // Refresh groups list
+      await fetchGroups();
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const refreshGroups = () => {
     fetchGroups();
   };
@@ -196,6 +218,7 @@ export const useGroups = () => {
     selectGroup,
     refreshGroups,
     fetchGroupMembers,
-    logPushups
+    logPushups,
+    leaveGroup
   };
 };
