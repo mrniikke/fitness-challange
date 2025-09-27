@@ -25,6 +25,8 @@ export interface GroupMember {
     display_name: string | null;
   };
   todayPushups?: number;
+  completionStatus?: 'completed' | 'failed' | 'pending';
+  isFirstFinisher?: boolean;
 }
 
 export interface PushupLog {
@@ -35,6 +37,8 @@ export interface PushupLog {
   log_date: string;
   created_at: string;
   updated_at: string;
+  completed_at?: string | null;
+  is_first_finisher?: boolean;
 }
 
 export const useGroups = () => {
@@ -101,7 +105,7 @@ export const useGroups = () => {
 
       if (error) throw error;
       
-      // Fetch today's push-up logs for all members
+      // Fetch today's push-up logs for all members with completion data
       const today = new Date().toISOString().split('T')[0];
       const { data: logsData, error: logsError } = await supabase
         .from('pushup_logs')
@@ -113,12 +117,35 @@ export const useGroups = () => {
 
       setPushupLogs(logsData || []);
 
-      // Combine member data with push-up data
-      const membersWithPushups = (data || []).map(member => ({
-        ...member,
-        role: member.role as 'admin' | 'member',
-        todayPushups: logsData?.find(log => log.user_id === member.user_id)?.pushups || 0
-      }));
+      // Get current group to check daily goal
+      const currentGroupData = groups.find(g => g.id === groupId) || currentGroup;
+      const dailyGoal = currentGroupData?.daily_goal || 200;
+
+      // Get current time for checking if day has ended (simplified to just check if it's past midnight)
+      const now = new Date();
+      const dayEnded = false; // For now, we'll calculate status in real-time
+
+      // Combine member data with push-up data and completion status
+      const membersWithPushups = (data || []).map(member => {
+        const log = logsData?.find(log => log.user_id === member.user_id);
+        const todayPushups = log?.pushups || 0;
+        
+        let completionStatus: 'completed' | 'failed' | 'pending' = 'pending';
+        
+        if (log?.completed_at) {
+          completionStatus = 'completed';
+        } else if (dayEnded && todayPushups < dailyGoal) {
+          completionStatus = 'failed';
+        }
+        
+        return {
+          ...member,
+          role: member.role as 'admin' | 'member',
+          todayPushups,
+          completionStatus,
+          isFirstFinisher: log?.is_first_finisher || false
+        };
+      });
 
       setMembers(membersWithPushups);
     } catch (error) {
@@ -132,7 +159,11 @@ export const useGroups = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Try to update existing log first, if it doesn't exist, insert new one
+      // Get the current group to check daily goal
+      const currentGroupData = groups.find(g => g.id === groupId);
+      if (!currentGroupData) return false;
+      
+      // Get existing log
       const { data: existingLog } = await supabase
         .from('pushup_logs')
         .select('*')
@@ -141,11 +172,41 @@ export const useGroups = () => {
         .eq('log_date', today)
         .maybeSingle();
 
+      const previousPushups = existingLog?.pushups || 0;
+      const newTotalPushups = previousPushups + pushups;
+      const dailyGoal = currentGroupData.daily_goal;
+      
+      // Check if user just completed their goal
+      const justCompletedGoal = previousPushups < dailyGoal && newTotalPushups >= dailyGoal;
+      
+      let completedAt = existingLog?.completed_at;
+      let isFirstFinisher = existingLog?.is_first_finisher || false;
+      
+      if (justCompletedGoal) {
+        completedAt = new Date().toISOString();
+        
+        // Check if this is the first completion in the group today
+        const { data: otherCompletions } = await supabase
+          .from('pushup_logs')
+          .select('id, completed_at')
+          .eq('group_id', groupId)
+          .eq('log_date', today)
+          .not('completed_at', 'is', null)
+          .order('completed_at', { ascending: true });
+        
+        // If no other completions exist, this user is the first finisher
+        isFirstFinisher = (otherCompletions?.length || 0) === 0;
+      }
+
       if (existingLog) {
         // Update existing log
         const { error } = await supabase
           .from('pushup_logs')
-          .update({ pushups: existingLog.pushups + pushups })
+          .update({ 
+            pushups: newTotalPushups,
+            completed_at: completedAt,
+            is_first_finisher: isFirstFinisher
+          })
           .eq('id', existingLog.id);
         
         if (error) throw error;
@@ -156,8 +217,10 @@ export const useGroups = () => {
           .insert({
             user_id: user.id,
             group_id: groupId,
-            pushups: pushups,
-            log_date: today
+            pushups: newTotalPushups,
+            log_date: today,
+            completed_at: completedAt,
+            is_first_finisher: isFirstFinisher
           });
         
         if (error) throw error;

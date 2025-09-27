@@ -123,27 +123,33 @@ export type Database = {
       }
       pushup_logs: {
         Row: {
+          completed_at: string | null
           created_at: string
           group_id: string
           id: string
+          is_first_finisher: boolean | null
           log_date: string
           pushups: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           group_id: string
           id?: string
+          is_first_finisher?: boolean | null
           log_date?: string
           pushups?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           group_id?: string
           id?: string
+          is_first_finisher?: boolean | null
           log_date?: string
           pushups?: number
           updated_at?: string

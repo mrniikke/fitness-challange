@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
-import { Users, Plus, Copy, Crown, User, Target } from "lucide-react";
+import { Users, Plus, Copy, Crown, User, Target, Star, Skull } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateGroupDialog from "./CreateGroupDialog";
 import JoinGroupDialog from "./JoinGroupDialog";
@@ -294,25 +294,37 @@ const GroupDashboard = () => {
                 
                 return (
                   <div key={member.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground">
-                          {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
-                          {isCurrentUser && " (You)"}
-                        </span>
-                        <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
-                          {member.role === 'admin' ? (
-                            <><Crown className="h-3 w-3 mr-1" /> Admin</>
-                          ) : (
-                            <><User className="h-3 w-3 mr-1" /> Member</>
-                          )}
-                        </Badge>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-primary">{todayPushups}</div>
-                        <div className="text-xs text-muted-foreground">{progressPercentage.toFixed(0)}%</div>
-                      </div>
-                    </div>
+                     <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                         <span className="font-medium text-foreground">
+                           {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
+                           {isCurrentUser && " (You)"}
+                         </span>
+                         <div className="flex items-center gap-1">
+                           <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
+                             {member.role === 'admin' ? (
+                               <><Crown className="h-3 w-3 mr-1" /> Admin</>
+                             ) : (
+                               <><User className="h-3 w-3 mr-1" /> Member</>
+                             )}
+                           </Badge>
+                           {member.isFirstFinisher && member.completionStatus === 'completed' && (
+                             <div title="First to complete today's goal!">
+                               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                             </div>
+                           )}
+                           {member.completionStatus === 'failed' && (
+                             <div title="Didn't reach today's goal">
+                               <Skull className="h-4 w-4 text-gray-600" />
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                       <div className="text-right">
+                         <div className="font-semibold text-primary">{todayPushups}</div>
+                         <div className="text-xs text-muted-foreground">{progressPercentage.toFixed(0)}%</div>
+                       </div>
+                     </div>
                     <Progress value={progressPercentage} className="h-2" />
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{todayPushups} / {currentGroup.daily_goal} push-ups</span>
