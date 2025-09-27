@@ -38,7 +38,14 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          soft: "hsl(var(--accent-soft))",
         },
+        star: {
+          DEFAULT: "hsl(var(--star))",
+          foreground: "hsl(var(--star-foreground))",
+        },
+        "card-soft": "hsl(var(--card-soft))",
+        "primary-soft": "hsl(var(--primary-soft))",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
