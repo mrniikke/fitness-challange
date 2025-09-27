@@ -308,65 +308,63 @@ const GroupDashboard = () => {
         </Card>
 
         {/* Log Progress Section */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           {challenges.map((challenge) => {
             const currentProgress = getCurrentProgress(challenge.id);
             const goalReached = isGoalReached(challenge.id);
             const remaining = challenge.goal_amount - currentProgress;
             
             return (
-              <Card key={challenge.id} className="border-0 bg-gradient-card shadow-medium">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    {goalReached ? (
-                      <Target className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <Plus className="h-5 w-5" />
-                    )}
-                    Log Your Progress - {challenge.name}
-                    {goalReached && (
-                      <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">
-                        Goal Reached! 🎉
-                      </Badge>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder={goalReached ? "Goal completed!" : `Enter ${challenge.name.toLowerCase()} count`}
-                      value={pushupInputs[challenge.id] || ''}
-                      onChange={(e) => setPushupInputs(prev => ({ ...prev, [challenge.id]: e.target.value }))}
-                      min="0"
-                      max={goalReached ? 0 : remaining}
-                      disabled={goalReached}
-                    />
-                    <Button 
-                      onClick={() => handleLogPushups(challenge.id)}
-                      disabled={goalReached || !!isLogging[challenge.id] || !pushupInputs[challenge.id]?.trim()}
-                      className="min-w-[100px]"
-                    >
-                      {isLogging[challenge.id] ? "Logging..." : goalReached ? "Complete" : "Log"}
-                    </Button>
-                  </div>
-                  <div className="mt-2 flex justify-between items-center">
-                    <div className="text-sm text-muted-foreground">
-                      Daily Goal: {challenge.goal_amount}
+              <Card key={challenge.id} className="border-0 bg-gradient-card shadow-sm">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-sm flex items-center gap-2">
+                        {goalReached ? (
+                          <Target className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                        {challenge.name}
+                        {goalReached && (
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 px-2 py-0">
+                            Complete 🎉
+                          </Badge>
+                        )}
+                      </h3>
+                      <div className="text-xs text-muted-foreground">
+                        {currentProgress} / {challenge.goal_amount}
+                      </div>
                     </div>
-                    <div className="text-sm font-medium">
-                      Progress: {currentProgress} / {challenge.goal_amount}
-                      {!goalReached && ` (${remaining} remaining)`}
+                    
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder={goalReached ? "Goal completed!" : `Enter count`}
+                        value={pushupInputs[challenge.id] || ''}
+                        onChange={(e) => setPushupInputs(prev => ({ ...prev, [challenge.id]: e.target.value }))}
+                        min="0"
+                        max={goalReached ? 0 : remaining}
+                        disabled={goalReached}
+                        className="h-8"
+                      />
+                      <Button 
+                        onClick={() => handleLogPushups(challenge.id)}
+                        disabled={goalReached || !!isLogging[challenge.id] || !pushupInputs[challenge.id]?.trim()}
+                        size="sm"
+                        className="h-8 px-3"
+                      >
+                        {isLogging[challenge.id] ? "..." : goalReached ? "✓" : "Log"}
+                      </Button>
                     </div>
-                  </div>
-                  {currentProgress > 0 && (
-                    <div className="mt-2">
+                    
+                    {currentProgress > 0 && (
                       <Progress 
                         value={Math.min((currentProgress / challenge.goal_amount) * 100, 100)} 
-                        className="h-2" 
+                        className="h-1.5" 
                       />
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
