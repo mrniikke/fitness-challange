@@ -3,18 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
 import { Users, Plus, Copy, Crown, User, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateGroupDialog from "./CreateGroupDialog";
 import JoinGroupDialog from "./JoinGroupDialog";
-import PushupInput from "../PushupInput";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
   const { groups, currentGroup, members, loading, selectGroup, refreshGroups, logPushups } = useGroups();
   const [showGroupList, setShowGroupList] = useState(true);
+  const [pushupInput, setPushupInput] = useState("");
+  const [isLogging, setIsLogging] = useState(false);
   const { toast } = useToast();
   
   const DAILY_GOAL = 200; // Default daily goal
@@ -44,9 +46,36 @@ const GroupDashboard = () => {
     setShowGroupList(false);
   };
 
-  const handleLogPushups = async (pushups: number) => {
-    if (!currentGroup) return false;
-    return await logPushups(currentGroup.id, pushups);
+  const handleLogPushups = async () => {
+    if (!currentGroup || !pushupInput.trim()) return;
+    
+    const pushups = parseInt(pushupInput);
+    if (isNaN(pushups) || pushups < 0) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter a valid number of push-ups.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLogging(true);
+    const success = await logPushups(currentGroup.id, pushups);
+    
+    if (success) {
+      toast({
+        title: "Push-ups logged!",
+        description: `Successfully logged ${pushups} push-ups for today.`,
+      });
+      setPushupInput("");
+    } else {
+      toast({
+        title: "Failed to log push-ups",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
+    setIsLogging(false);
   };
 
   if (loading) {
@@ -236,7 +265,22 @@ const GroupDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <PushupInput onLogPushups={handleLogPushups} />
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Enter push-ups count"
+                value={pushupInput}
+                onChange={(e) => setPushupInput(e.target.value)}
+                min="0"
+              />
+              <Button 
+                onClick={handleLogPushups}
+                disabled={isLogging || !pushupInput.trim()}
+                className="min-w-[100px]"
+              >
+                {isLogging ? "Logging..." : "Log"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -273,6 +317,7 @@ const GroupDashboard = () => {
               {members.map((member) => {
                 const todayPushups = member.todayPushups || 0;
                 const progressPercentage = Math.min((todayPushups / DAILY_GOAL) * 100, 100);
+                const isCurrentUser = member.user_id === user?.id;
                 
                 return (
                   <div key={member.id} className="space-y-2">
@@ -280,6 +325,7 @@ const GroupDashboard = () => {
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-foreground">
                           {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
+                          {isCurrentUser && " (You)"}
                         </span>
                         <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
                           {member.role === 'admin' ? (
@@ -304,21 +350,6 @@ const GroupDashboard = () => {
                   </div>
                 );
               })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Progress Section - Placeholder for future push-up tracking */}
-        <Card className="border-0 bg-gradient-card shadow-medium">
-          <CardHeader>
-            <CardTitle>Group Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <Plus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                Push-up tracking coming soon! Start logging your daily progress.
-              </p>
             </div>
           </CardContent>
         </Card>
