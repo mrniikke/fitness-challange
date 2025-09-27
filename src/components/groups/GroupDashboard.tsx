@@ -66,10 +66,19 @@ const GroupDashboard = () => {
     }
   };
 
+  // Helper function to get local date string (not affected by timezone conversion to UTC)
+  const getLocalDateString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Helper function to get current progress for a challenge
   const getCurrentProgress = (challengeId: string) => {
     if (!user) return 0;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     const todayLog = pushupLogs.find(log => 
       log.user_id === user.id && 
       log.challenge_id === challengeId && 

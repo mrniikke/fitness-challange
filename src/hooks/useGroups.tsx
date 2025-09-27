@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+// Helper function to get local date string (not affected by timezone conversion to UTC)
+const getLocalDateString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export interface Group {
   id: string;
   name: string;
@@ -127,7 +136,7 @@ export const useGroups = () => {
       setChallenges(challengesData || []);
       
       // Fetch today's push-up logs for all members with completion data
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateString();
       const { data: logsData, error: logsError } = await supabase
         .from('pushup_logs')
         .select('*')
@@ -186,7 +195,7 @@ export const useGroups = () => {
     if (!user) return false;
 
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateString();
       
       // Get the challenge to check goal
       const challenge = challenges.find(c => c.id === challengeId);
