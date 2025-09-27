@@ -1,13 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useGroups } from "@/hooks/useGroups";
 import WelcomeScreen from "@/components/WelcomeScreen";
-import GroupDashboard from "@/components/GroupDashboard";
-import { useState } from "react";
+import GroupDashboard from "@/components/groups/GroupDashboard";
 
 const Index = () => {
-  const [hasGroup, setHasGroup] = useState(false);
   const { user, loading } = useAuth();
+  const { groups, loading: groupsLoading } = useGroups();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,7 +16,7 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
-  if (loading) {
+  if (loading || groupsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-muted-foreground">Loading...</div>
@@ -30,7 +30,7 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {hasGroup ? (
+      {groups.length > 0 ? (
         <GroupDashboard />
       ) : (
         <WelcomeScreen />
