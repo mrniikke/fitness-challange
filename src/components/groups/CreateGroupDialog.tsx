@@ -41,12 +41,10 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
       const validationData = { name, description: description || undefined };
       groupSchema.parse(validationData);
 
-      // Generate invite code
-      const { data: inviteCodeData, error: inviteError } = await supabase.rpc(
-        'generate_invite_code'
-      );
+      console.log('Creating group with user ID:', user.id);
 
-      if (inviteError) throw inviteError;
+      // Generate invite code (client-side)
+      const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
       // Create group
       const { data: groupData, error: groupError } = await supabase
@@ -54,13 +52,18 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
         .insert({
           name,
           description: description || null,
-          invite_code: inviteCodeData,
+          invite_code: inviteCode,
           created_by: user.id,
         })
         .select()
         .single();
 
-      if (groupError) throw groupError;
+      if (groupError) {
+        console.error('Group creation error:', groupError);
+        throw groupError;
+      }
+
+      console.log('Group created:', groupData);
 
       // Add creator as admin member
       const { error: memberError } = await supabase
@@ -71,11 +74,14 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
           role: 'admin',
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Member creation error:', memberError);
+        throw memberError;
+      }
 
       toast({
         title: "Group created!",
-        description: `Your group "${name}" has been created with invite code: ${inviteCodeData}`,
+        description: `Your group "${name}" has been created with invite code: ${inviteCode}`,
       });
 
       setName("");
@@ -83,6 +89,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
       setOpen(false);
       onGroupCreated?.();
     } catch (error) {
+      console.error('Full error:', error);
       if (error instanceof z.ZodError) {
         toast({
           variant: "destructive",
