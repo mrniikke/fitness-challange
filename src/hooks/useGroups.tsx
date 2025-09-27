@@ -183,17 +183,32 @@ export const useGroups = () => {
   };
 
   const logPushups = async (groupId: string, challengeId: string, pushups: number) => {
-    if (!user) return false;
+    console.log("=== logPushups FUNCTION DEBUG ===");
+    console.log("Parameters:", { groupId, challengeId, pushups });
+    console.log("User:", user);
+    console.log("Available challenges:", challenges);
+    
+    if (!user) {
+      console.log("No user found");
+      return false;
+    }
 
     try {
       const today = new Date().toISOString().split('T')[0];
+      console.log("Today's date:", today);
       
       // Get the challenge to check goal
       const challenge = challenges.find(c => c.id === challengeId);
-      if (!challenge) return false;
+      console.log("Found challenge:", challenge);
+      
+      if (!challenge) {
+        console.log("Challenge not found in challenges array");
+        return false;
+      }
       
       // Get existing log
-      const { data: existingLog } = await supabase
+      console.log("Checking for existing log...");
+      const { data: existingLog, error: fetchError } = await supabase
         .from('pushup_logs')
         .select('*')
         .eq('user_id', user.id)
@@ -202,12 +217,27 @@ export const useGroups = () => {
         .eq('log_date', today)
         .maybeSingle();
 
+      console.log("Existing log:", existingLog);
+      console.log("Fetch error:", fetchError);
+
+      if (fetchError) {
+        console.error("Error fetching existing log:", fetchError);
+        return false;
+      }
+
       const previousPushups = existingLog?.pushups || 0;
       const newTotalPushups = previousPushups + pushups;
       const goalAmount = challenge.goal_amount;
       
+      console.log("Progress calculation:", {
+        previousPushups,
+        newTotalPushups,
+        goalAmount
+      });
+      
       // Check if user just completed this challenge
       const justCompletedChallenge = previousPushups < goalAmount && newTotalPushups >= goalAmount;
+      console.log("Just completed challenge:", justCompletedChallenge);
       
       let completedAt = existingLog?.completed_at;
       let isFirstFinisher = existingLog?.is_first_finisher || false;
@@ -225,11 +255,15 @@ export const useGroups = () => {
           .not('completed_at', 'is', null)
           .order('completed_at', { ascending: true });
         
+        console.log("Other completions:", otherCompletions);
+        
         // If no other completions exist, this user is the first finisher for this challenge
         isFirstFinisher = (otherCompletions?.length || 0) === 0;
+        console.log("Is first finisher:", isFirstFinisher);
       }
 
       if (existingLog) {
+        console.log("Updating existing log...");
         // Update existing log
         const { error } = await supabase
           .from('pushup_logs')
@@ -240,8 +274,10 @@ export const useGroups = () => {
           })
           .eq('id', existingLog.id);
         
+        console.log("Update error:", error);
         if (error) throw error;
       } else {
+        console.log("Inserting new log...");
         // Insert new log
         const { error } = await supabase
           .from('pushup_logs')
@@ -255,11 +291,14 @@ export const useGroups = () => {
             is_first_finisher: isFirstFinisher
           });
         
+        console.log("Insert error:", error);
         if (error) throw error;
       }
 
+      console.log("About to refresh group members...");
       // Refresh the member data to show updated progress
       await fetchGroupMembers(groupId);
+      console.log("Successfully refreshed group members");
       return true;
     } catch (error) {
       console.error('Error logging push-ups:', error);
