@@ -18,6 +18,7 @@ import { z } from "zod";
 const groupSchema = z.object({
   name: z.string().min(2, "Group name must be at least 2 characters"),
   description: z.string().optional(),
+  dailyGoal: z.number().min(1, "Daily goal must be at least 1 push-up").max(1000, "Daily goal cannot exceed 1000 push-ups"),
 });
 
 interface CreateGroupDialogProps {
@@ -28,6 +29,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [dailyGoal, setDailyGoal] = useState(200);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -38,7 +40,11 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
 
     setLoading(true);
     try {
-      const validationData = { name, description: description || undefined };
+      const validationData = { 
+        name, 
+        description: description || undefined,
+        dailyGoal 
+      };
       groupSchema.parse(validationData);
 
       console.log('Creating group with user ID:', user.id);
@@ -52,6 +58,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
         .insert({
           name,
           description: description || null,
+          daily_goal: dailyGoal,
           invite_code: inviteCode,
           created_by: user.id,
         })
@@ -81,11 +88,12 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
 
       toast({
         title: "Group created!",
-        description: `Your group "${name}" has been created with invite code: ${inviteCode}`,
+        description: `Your group "${name}" has been created with a daily goal of ${dailyGoal} push-ups. Invite code: ${inviteCode}`,
       });
 
       setName("");
       setDescription("");
+      setDailyGoal(200);
       setOpen(false);
       onGroupCreated?.();
     } catch (error) {
@@ -140,6 +148,23 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
               placeholder="Describe your group's challenge"
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dailyGoal">Daily Push-up Goal</Label>
+            <Input
+              id="dailyGoal"
+              type="number"
+              value={dailyGoal}
+              onChange={(e) => setDailyGoal(parseInt(e.target.value) || 200)}
+              placeholder="200"
+              min="1"
+              max="1000"
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              Set how many push-ups each member should aim for daily (1-1000)
+            </p>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>

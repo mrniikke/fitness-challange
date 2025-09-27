@@ -18,8 +18,6 @@ const GroupDashboard = () => {
   const [pushupInput, setPushupInput] = useState("");
   const [isLogging, setIsLogging] = useState(false);
   const { toast } = useToast();
-  
-  const DAILY_GOAL = 200; // Default daily goal
 
   const handleSignOut = async () => {
     await signOut();
@@ -295,7 +293,7 @@ const GroupDashboard = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Daily Goal: {DAILY_GOAL} push-ups each</span>
+                <span className="text-muted-foreground">Daily Goal: {currentGroup.daily_goal} push-ups each</span>
                 <span className="font-semibold text-primary">
                   {members.reduce((sum, member) => sum + (member.todayPushups || 0), 0)} total today
                 </span>
@@ -316,7 +314,7 @@ const GroupDashboard = () => {
             <div className="space-y-4">
               {members.map((member) => {
                 const todayPushups = member.todayPushups || 0;
-                const progressPercentage = Math.min((todayPushups / DAILY_GOAL) * 100, 100);
+                const progressPercentage = Math.min((todayPushups / currentGroup.daily_goal) * 100, 100);
                 const isCurrentUser = member.user_id === user?.id;
                 
                 return (
@@ -342,9 +340,9 @@ const GroupDashboard = () => {
                     </div>
                     <Progress value={progressPercentage} className="h-2" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{todayPushups} / {DAILY_GOAL} push-ups</span>
+                      <span>{todayPushups} / {currentGroup.daily_goal} push-ups</span>
                       <span>
-                        {DAILY_GOAL - todayPushups > 0 ? `${DAILY_GOAL - todayPushups} remaining` : "Goal reached! 🎉"}
+                        {currentGroup.daily_goal - todayPushups > 0 ? `${currentGroup.daily_goal - todayPushups} remaining` : "Goal reached! 🎉"}
                       </span>
                     </div>
                   </div>
