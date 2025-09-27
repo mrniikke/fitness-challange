@@ -161,20 +161,30 @@ export const useGroups = () => {
         
         let completionStatus: 'completed' | 'failed' | 'pending' = 'pending';
         
-        // Check if user completed all challenges
+        // Check if user completed all challenges today
         const completedChallenges = (challengesData || []).filter(challenge => {
           const challengeLog = memberLogs.find(log => log.challenge_id === challenge.id);
           return challengeLog && challengeLog.completed_at;
         });
         
+        // Real-time completion status check
         if (completedChallenges.length === (challengesData?.length || 0) && (challengesData?.length || 0) > 0) {
           completionStatus = 'completed';
-        } else if (dayEnded && todayPushups < totalGoal) {
-          completionStatus = 'failed';
+        } else {
+          // Check if it's past a reasonable "end of day" time (e.g., 11:59 PM)
+          const now = new Date();
+          const endOfDay = new Date();
+          endOfDay.setHours(23, 59, 59, 999);
+          
+          // If it's past 11:59 PM and user hasn't completed all challenges, mark as failed
+          if (now > endOfDay && completedChallenges.length < (challengesData?.length || 0)) {
+            completionStatus = 'failed';
+          }
         }
         
-        // Check if this user was first to complete all challenges
-        const isFirstFinisher = memberLogs.some(log => log.is_first_finisher);
+        // Check if this user was first to complete all challenges TODAY (not historically)
+        const todayLogs = memberLogs.filter(log => log.log_date === today);
+        const isFirstFinisher = todayLogs.some(log => log.is_first_finisher);
         
         return {
           ...member,
@@ -227,18 +237,66 @@ export const useGroups = () => {
       if (justCompletedChallenge) {
         completedAt = new Date().toISOString();
         
-        // Check if this is the first completion for this challenge today
-        const { data: otherCompletions } = await supabase
+        // Check if user has now completed ALL challenges for today
+        const { data: allUserLogs } = await supabase
           .from('pushup_logs')
-          .select('id, completed_at')
+          .select('challenge_id, pushups')
+          .eq('user_id', user.id)
           .eq('group_id', groupId)
-          .eq('challenge_id', challengeId)
-          .eq('log_date', today)
-          .not('completed_at', 'is', null)
-          .order('completed_at', { ascending: true });
+          .eq('log_date', today);
         
-        // If no other completions exist, this user is the first finisher for this challenge
-        isFirstFinisher = (otherCompletions?.length || 0) === 0;
+        // Create a map of user's progress including this new log
+        const userProgress = new Map();
+        allUserLogs?.forEach(log => {
+          if (log.challenge_id) {
+            userProgress.set(log.challenge_id, log.pushups);
+          }
+        });
+        // Add/update current challenge progress
+        userProgress.set(challengeId, newTotalPushups);
+        
+        // Check if user completed all challenges
+        const allChallengesCompleted = challenges.every(challenge => {
+          const userPushups = userProgress.get(challenge.id) || 0;
+          return userPushups >= challenge.goal_amount;
+        });
+        
+        if (allChallengesCompleted) {
+          // Check if this is the first user to complete ALL challenges today
+          const { data: otherFullCompletions } = await supabase
+            .from('pushup_logs')
+            .select('user_id, challenge_id, completed_at, pushups')
+            .eq('group_id', groupId)
+            .eq('log_date', today)
+            .not('completed_at', 'is', null);
+          
+          // Count how many unique users have completed all their challenges
+          const completedUsers = new Set();
+          
+          // Group logs by user
+          const userLogsMap = new Map();
+          otherFullCompletions?.forEach(log => {
+            if (!userLogsMap.has(log.user_id)) {
+              userLogsMap.set(log.user_id, []);
+            }
+            userLogsMap.get(log.user_id).push(log);
+          });
+          
+          // Check each user's completion status
+          userLogsMap.forEach((userLogs, userId) => {
+            const userCompletedChallenges = challenges.filter(challenge => {
+              const challengeLog = userLogs.find(log => log.challenge_id === challenge.id);
+              return challengeLog && challengeLog.pushups >= challenge.goal_amount;
+            });
+            
+            if (userCompletedChallenges.length === challenges.length) {
+              completedUsers.add(userId);
+            }
+          });
+          
+          // If no other users completed all challenges, this user is first
+          isFirstFinisher = completedUsers.size === 0;
+        }
       }
 
       if (existingLog) {
