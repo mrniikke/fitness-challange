@@ -21,7 +21,7 @@ const GroupDashboard = () => {
   const { notifications, clearNotifications, removeNotification } = useNotifications(currentGroup?.id);
   const [showGroupList, setShowGroupList] = useState(true);
   const [pushupInputs, setPushupInputs] = useState<{[challengeId: string]: string}>({});
-  const [isLogging, setIsLogging] = useState(false);
+  const [isLogging, setIsLogging] = useState<{[challengeId: string]: boolean}>({});
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -79,7 +79,7 @@ const GroupDashboard = () => {
       return;
     }
 
-    setIsLogging(true);
+    setIsLogging(prev => ({ ...prev, [challengeId]: true }));
     try {
       const success = await logPushups(currentGroup.id, challengeId, pushups);
       
@@ -105,7 +105,7 @@ const GroupDashboard = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLogging(false);
+      setIsLogging(prev => ({ ...prev, [challengeId]: false }));
     }
   };
 
@@ -295,10 +295,10 @@ const GroupDashboard = () => {
                   />
                   <Button 
                     onClick={() => handleLogPushups(challenge.id)}
-                    disabled={isLogging || !pushupInputs[challenge.id]?.trim()}
+                    disabled={!!isLogging[challenge.id] || !pushupInputs[challenge.id]?.trim()}
                     className="min-w-[100px]"
                   >
-                    {isLogging ? "Logging..." : "Log"}
+                    {isLogging[challenge.id] ? "Logging..." : "Log"}
                   </Button>
                 </div>
                 <div className="mt-2 text-sm text-muted-foreground">
