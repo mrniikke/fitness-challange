@@ -23,12 +23,24 @@ export interface GroupMember {
     username: string | null;
     display_name: string | null;
   };
+  todayPushups?: number;
+}
+
+export interface PushupLog {
+  id: string;
+  user_id: string;
+  group_id: string;
+  pushups: number;
+  log_date: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export const useGroups = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [pushupLogs, setPushupLogs] = useState<PushupLog[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -86,12 +98,75 @@ export const useGroups = () => {
         .order('joined_at', { ascending: true });
 
       if (error) throw error;
-      setMembers((data || []).map(member => ({
+      
+      // Fetch today's push-up logs for all members
+      const today = new Date().toISOString().split('T')[0];
+      const { data: logsData, error: logsError } = await supabase
+        .from('pushup_logs')
+        .select('*')
+        .eq('group_id', groupId)
+        .eq('log_date', today);
+
+      if (logsError) throw logsError;
+
+      setPushupLogs(logsData || []);
+
+      // Combine member data with push-up data
+      const membersWithPushups = (data || []).map(member => ({
         ...member,
-        role: member.role as 'admin' | 'member'
-      })));
+        role: member.role as 'admin' | 'member',
+        todayPushups: logsData?.find(log => log.user_id === member.user_id)?.pushups || 0
+      }));
+
+      setMembers(membersWithPushups);
     } catch (error) {
       console.error('Error fetching group members:', error);
+    }
+  };
+
+  const logPushups = async (groupId: string, pushups: number) => {
+    if (!user) return false;
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Try to update existing log first, if it doesn't exist, insert new one
+      const { data: existingLog } = await supabase
+        .from('pushup_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('group_id', groupId)
+        .eq('log_date', today)
+        .maybeSingle();
+
+      if (existingLog) {
+        // Update existing log
+        const { error } = await supabase
+          .from('pushup_logs')
+          .update({ pushups: existingLog.pushups + pushups })
+          .eq('id', existingLog.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new log
+        const { error } = await supabase
+          .from('pushup_logs')
+          .insert({
+            user_id: user.id,
+            group_id: groupId,
+            pushups: pushups,
+            log_date: today
+          });
+        
+        if (error) throw error;
+      }
+
+      // Refresh the member data to show updated progress
+      await fetchGroupMembers(groupId);
+      return true;
+    } catch (error) {
+      console.error('Error logging push-ups:', error);
+      return false;
     }
   };
 
@@ -114,9 +189,11 @@ export const useGroups = () => {
     groups,
     currentGroup,
     members,
+    pushupLogs,
     loading,
     selectGroup,
     refreshGroups,
-    fetchGroupMembers
+    fetchGroupMembers,
+    logPushups
   };
 };

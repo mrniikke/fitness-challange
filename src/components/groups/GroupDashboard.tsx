@@ -2,18 +2,22 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
-import { Users, Plus, Copy, Crown, User } from "lucide-react";
+import { Users, Plus, Copy, Crown, User, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateGroupDialog from "./CreateGroupDialog";
 import JoinGroupDialog from "./JoinGroupDialog";
+import PushupInput from "../PushupInput";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
-  const { groups, currentGroup, members, loading, selectGroup, refreshGroups } = useGroups();
+  const { groups, currentGroup, members, loading, selectGroup, refreshGroups, logPushups } = useGroups();
   const [showGroupList, setShowGroupList] = useState(true);
   const { toast } = useToast();
+  
+  const DAILY_GOAL = 200; // Default daily goal
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,6 +42,11 @@ const GroupDashboard = () => {
   const selectGroupAndHideList = (group: any) => {
     selectGroup(group);
     setShowGroupList(false);
+  };
+
+  const handleLogPushups = async (pushups: number) => {
+    if (!currentGroup) return false;
+    return await logPushups(currentGroup.id, pushups);
   };
 
   if (loading) {
@@ -218,35 +227,83 @@ const GroupDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Members */}
+        {/* Log Push-ups Section */}
+        <Card className="border-0 bg-gradient-card shadow-medium">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Log Your Push-ups
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PushupInput onLogPushups={handleLogPushups} />
+          </CardContent>
+        </Card>
+
+        {/* Group Progress Overview */}
+        <Card className="border-0 bg-gradient-card shadow-medium">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Daily Group Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Daily Goal: {DAILY_GOAL} push-ups each</span>
+                <span className="font-semibold text-primary">
+                  {members.reduce((sum, member) => sum + (member.todayPushups || 0), 0)} total today
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Members Progress */}
         <Card className="border-0 bg-gradient-card shadow-medium">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Members ({members.length})
+              Members Progress ({members.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {members.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Joined {new Date(member.joined_at).toLocaleDateString()}
-                    </p>
+            <div className="space-y-4">
+              {members.map((member) => {
+                const todayPushups = member.todayPushups || 0;
+                const progressPercentage = Math.min((todayPushups / DAILY_GOAL) * 100, 100);
+                
+                return (
+                  <div key={member.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">
+                          {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
+                        </span>
+                        <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
+                          {member.role === 'admin' ? (
+                            <><Crown className="h-3 w-3 mr-1" /> Admin</>
+                          ) : (
+                            <><User className="h-3 w-3 mr-1" /> Member</>
+                          )}
+                        </Badge>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-primary">{todayPushups}</div>
+                        <div className="text-xs text-muted-foreground">{progressPercentage.toFixed(0)}%</div>
+                      </div>
+                    </div>
+                    <Progress value={progressPercentage} className="h-2" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{todayPushups} / {DAILY_GOAL} push-ups</span>
+                      <span>
+                        {DAILY_GOAL - todayPushups > 0 ? `${DAILY_GOAL - todayPushups} remaining` : "Goal reached! 🎉"}
+                      </span>
+                    </div>
                   </div>
-                  <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
-                    {member.role === 'admin' ? (
-                      <><Crown className="h-3 w-3 mr-1" /> Admin</>
-                    ) : (
-                      <><User className="h-3 w-3 mr-1" /> Member</>
-                    )}
-                  </Badge>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
