@@ -1,8 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 import heroFitness from "@/assets/hero-fitness.png";
 
 const WelcomeScreen = () => {
+  const { signOut, user } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
@@ -61,11 +68,19 @@ const WelcomeScreen = () => {
           </Card>
         </div>
 
-        {/* Auth Hint */}
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">
-            Sign up or log in to get started
+        {/* User Info & Sign Out */}
+        <div className="text-center space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Welcome, {user?.email}!
           </p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSignOut}
+            className="text-xs"
+          >
+            Sign Out
+          </Button>
         </div>
       </div>
     </div>
