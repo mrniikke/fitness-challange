@@ -67,20 +67,10 @@ const GroupDashboard = () => {
   };
 
   const handleLogPushups = async (challengeId: string) => {
-    console.log("=== LOGGING DEBUG INFO ===");
-    console.log("Challenge ID:", challengeId);
-    console.log("Current Group:", currentGroup);
-    console.log("All Challenges:", challenges);
-    console.log("Input Value:", pushupInputs[challengeId]);
-    
-    if (!currentGroup || !pushupInputs[challengeId]?.trim()) {
-      console.log("Early return: missing group or input");
-      return;
-    }
+    if (!currentGroup || !pushupInputs[challengeId]?.trim()) return;
     
     const pushups = parseInt(pushupInputs[challengeId]);
     if (isNaN(pushups) || pushups < 0) {
-      console.log("Invalid pushups value:", pushups);
       toast({
         title: "Invalid input",
         description: "Please enter a valid number.",
@@ -89,27 +79,18 @@ const GroupDashboard = () => {
       return;
     }
 
-    console.log("About to call logPushups with:", {
-      groupId: currentGroup.id,
-      challengeId,
-      pushups
-    });
-
     setIsLogging(true);
     try {
       const success = await logPushups(currentGroup.id, challengeId, pushups);
-      console.log("logPushups result:", success);
       
       if (success) {
         const challenge = challenges.find(c => c.id === challengeId);
-        console.log("Found challenge:", challenge);
         toast({
           title: "Progress logged!",
           description: `Successfully logged ${pushups} for ${challenge?.name || 'challenge'}.`,
         });
         setPushupInputs(prev => ({ ...prev, [challengeId]: "" }));
       } else {
-        console.log("logPushups returned false");
         toast({
           title: "Failed to log progress",
           description: "Something went wrong. Please try again.",
