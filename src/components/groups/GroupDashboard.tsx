@@ -276,25 +276,6 @@ const GroupDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Group Progress Overview */}
-        <Card className="border-0 bg-gradient-card shadow-medium">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Daily Group Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Daily Goal: {currentGroup.daily_goal} push-ups each</span>
-                <span className="font-semibold text-primary">
-                  {members.reduce((sum, member) => sum + (member.todayPushups || 0), 0)} total today
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Members Progress */}
         <Card className="border-0 bg-gradient-card shadow-medium">
