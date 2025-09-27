@@ -29,7 +29,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [dailyGoal, setDailyGoal] = useState(200);
+  const [dailyGoal, setDailyGoal] = useState("200");
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,10 +40,11 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
 
     setLoading(true);
     try {
+      const dailyGoalNumber = parseInt(dailyGoal) || 200;
       const validationData = { 
         name, 
         description: description || undefined,
-        dailyGoal 
+        dailyGoal: dailyGoalNumber 
       };
       groupSchema.parse(validationData);
 
@@ -58,7 +59,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
         .insert({
           name,
           description: description || null,
-          daily_goal: dailyGoal,
+          daily_goal: dailyGoalNumber,
           invite_code: inviteCode,
           created_by: user.id,
         })
@@ -88,12 +89,12 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
 
       toast({
         title: "Group created!",
-        description: `Your group "${name}" has been created with a daily goal of ${dailyGoal} push-ups. Invite code: ${inviteCode}`,
+        description: `Your group "${name}" has been created with a daily goal of ${dailyGoalNumber} push-ups. Invite code: ${inviteCode}`,
       });
 
       setName("");
       setDescription("");
-      setDailyGoal(200);
+      setDailyGoal("200");
       setOpen(false);
       onGroupCreated?.();
     } catch (error) {
@@ -156,7 +157,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
               id="dailyGoal"
               type="number"
               value={dailyGoal}
-              onChange={(e) => setDailyGoal(parseInt(e.target.value) || 200)}
+              onChange={(e) => setDailyGoal(e.target.value)}
               placeholder="200"
               min="1"
               max="1000"
