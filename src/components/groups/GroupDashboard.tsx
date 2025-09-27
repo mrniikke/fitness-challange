@@ -268,14 +268,14 @@ const GroupDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
-              Log Your Push-ups
+              Log Your Progress
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2">
               <Input
                 type="number"
-                placeholder="Enter push-ups count"
+                placeholder="Enter progress count"
                 value={pushupInput}
                 onChange={(e) => setPushupInput(e.target.value)}
                 min="0"
@@ -342,7 +342,7 @@ const GroupDashboard = () => {
                      </div>
                     <Progress value={progressPercentage} className="h-2" />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{todayPushups} / {currentGroup.daily_goal} push-ups</span>
+                      <span>{todayPushups} / {currentGroup.daily_goal}</span>
                       <span>
                         {currentGroup.daily_goal - todayPushups > 0 ? `${currentGroup.daily_goal - todayPushups} remaining` : "Goal reached! 🎉"}
                       </span>
