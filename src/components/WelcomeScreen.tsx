@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import heroFitness from "@/assets/hero-fitness.png";
+import CreateGroupDialog from "@/components/groups/CreateGroupDialog";
+import JoinGroupDialog from "@/components/groups/JoinGroupDialog";
 
 const WelcomeScreen = () => {
   const { signOut, user } = useAuth();
@@ -44,9 +46,7 @@ const WelcomeScreen = () => {
                     Start a new challenge with your friends
                   </p>
                 </div>
-                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Create Group
-                </Button>
+                <CreateGroupDialog />
               </div>
             </CardContent>
           </Card>
@@ -60,9 +60,7 @@ const WelcomeScreen = () => {
                     Join your friends' challenge with an invite code
                   </p>
                 </div>
-                <Button variant="outline" className="w-full border-border hover:bg-secondary">
-                  Join Group
-                </Button>
+                <JoinGroupDialog />
               </div>
             </CardContent>
           </Card>
