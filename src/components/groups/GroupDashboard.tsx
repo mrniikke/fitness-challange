@@ -17,7 +17,7 @@ import NotificationPanel from "../notifications/NotificationPanel";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
-  const { groups, currentGroup, members, loading, challenges, selectGroup, refreshGroups, logPushups, leaveGroup } = useGroups();
+  const { groups, currentGroup, members, loading, challenges, pushupLogs, selectGroup, refreshGroups, logPushups, leaveGroup } = useGroups();
   const { notifications, clearNotifications, removeNotification } = useNotifications(currentGroup?.id);
   const [showGroupList, setShowGroupList] = useState(true);
   const [pushupInputs, setPushupInputs] = useState<{[challengeId: string]: string}>({});
@@ -66,6 +66,26 @@ const GroupDashboard = () => {
     }
   };
 
+  // Helper function to get current progress for a challenge
+  const getCurrentProgress = (challengeId: string) => {
+    if (!user) return 0;
+    const today = new Date().toISOString().split('T')[0];
+    const todayLog = pushupLogs.find(log => 
+      log.user_id === user.id && 
+      log.challenge_id === challengeId && 
+      log.log_date === today
+    );
+    return todayLog?.pushups || 0;
+  };
+
+  // Helper function to check if challenge goal is reached
+  const isGoalReached = (challengeId: string) => {
+    const challenge = challenges.find(c => c.id === challengeId);
+    if (!challenge) return false;
+    const currentProgress = getCurrentProgress(challengeId);
+    return currentProgress >= challenge.goal_amount;
+  };
+
   const handleLogPushups = async (challengeId: string) => {
     if (!currentGroup || !pushupInputs[challengeId]?.trim()) return;
     
@@ -74,6 +94,19 @@ const GroupDashboard = () => {
       toast({
         title: "Invalid input",
         description: "Please enter a valid number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if goal would be exceeded
+    const challenge = challenges.find(c => c.id === challengeId);
+    const currentProgress = getCurrentProgress(challengeId);
+    if (challenge && currentProgress + pushups > challenge.goal_amount) {
+      const remaining = challenge.goal_amount - currentProgress;
+      toast({
+        title: "Goal exceeded",
+        description: `You can only log ${remaining} more to reach your daily goal of ${challenge.goal_amount}.`,
         variant: "destructive",
       });
       return;
@@ -276,37 +309,68 @@ const GroupDashboard = () => {
 
         {/* Log Progress Section */}
         <div className="space-y-4">
-          {challenges.map((challenge) => (
-            <Card key={challenge.id} className="border-0 bg-gradient-card shadow-medium">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="h-5 w-5" />
-                  Log Your Progress - {challenge.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    placeholder={`Enter ${challenge.name.toLowerCase()} count`}
-                    value={pushupInputs[challenge.id] || ''}
-                    onChange={(e) => setPushupInputs(prev => ({ ...prev, [challenge.id]: e.target.value }))}
-                    min="0"
-                  />
-                  <Button 
-                    onClick={() => handleLogPushups(challenge.id)}
-                    disabled={!!isLogging[challenge.id] || !pushupInputs[challenge.id]?.trim()}
-                    className="min-w-[100px]"
-                  >
-                    {isLogging[challenge.id] ? "Logging..." : "Log"}
-                  </Button>
-                </div>
-                <div className="mt-2 text-sm text-muted-foreground">
-                  Daily Goal: {challenge.goal_amount}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {challenges.map((challenge) => {
+            const currentProgress = getCurrentProgress(challenge.id);
+            const goalReached = isGoalReached(challenge.id);
+            const remaining = challenge.goal_amount - currentProgress;
+            
+            return (
+              <Card key={challenge.id} className="border-0 bg-gradient-card shadow-medium">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {goalReached ? (
+                      <Target className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <Plus className="h-5 w-5" />
+                    )}
+                    Log Your Progress - {challenge.name}
+                    {goalReached && (
+                      <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">
+                        Goal Reached! 🎉
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder={goalReached ? "Goal completed!" : `Enter ${challenge.name.toLowerCase()} count`}
+                      value={pushupInputs[challenge.id] || ''}
+                      onChange={(e) => setPushupInputs(prev => ({ ...prev, [challenge.id]: e.target.value }))}
+                      min="0"
+                      max={goalReached ? 0 : remaining}
+                      disabled={goalReached}
+                    />
+                    <Button 
+                      onClick={() => handleLogPushups(challenge.id)}
+                      disabled={goalReached || !!isLogging[challenge.id] || !pushupInputs[challenge.id]?.trim()}
+                      className="min-w-[100px]"
+                    >
+                      {isLogging[challenge.id] ? "Logging..." : goalReached ? "Complete" : "Log"}
+                    </Button>
+                  </div>
+                  <div className="mt-2 flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">
+                      Daily Goal: {challenge.goal_amount}
+                    </div>
+                    <div className="text-sm font-medium">
+                      Progress: {currentProgress} / {challenge.goal_amount}
+                      {!goalReached && ` (${remaining} remaining)`}
+                    </div>
+                  </div>
+                  {currentProgress > 0 && (
+                    <div className="mt-2">
+                      <Progress 
+                        value={Math.min((currentProgress / challenge.goal_amount) * 100, 100)} 
+                        className="h-2" 
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
 
