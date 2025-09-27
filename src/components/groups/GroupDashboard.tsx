@@ -6,16 +6,19 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Users, Plus, Copy, Crown, User, Target, Star, Skull } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateGroupDialog from "./CreateGroupDialog";
 import JoinGroupDialog from "./JoinGroupDialog";
 import InviteButton from "./InviteButton";
 import SwipeableGroupCard from "./SwipeableGroupCard";
+import NotificationPanel from "../notifications/NotificationPanel";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
   const { groups, currentGroup, members, loading, selectGroup, refreshGroups, logPushups, leaveGroup } = useGroups();
+  const { notifications, clearNotifications, removeNotification } = useNotifications(currentGroup?.id);
   const [showGroupList, setShowGroupList] = useState(true);
   const [pushupInput, setPushupInput] = useState("");
   const [isLogging, setIsLogging] = useState(false);
@@ -115,9 +118,16 @@ const GroupDashboard = () => {
                 Welcome back, {user?.email}!
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-2">
+              <NotificationPanel 
+                notifications={notifications}
+                onClear={clearNotifications}
+                onRemove={removeNotification}
+              />
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
           </div>
 
           {/* Create/Join Actions */}
@@ -204,6 +214,11 @@ const GroupDashboard = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <NotificationPanel 
+              notifications={notifications}
+              onClear={clearNotifications}
+              onRemove={removeNotification}
+            />
             <Badge variant={currentGroup.role === 'admin' ? 'default' : 'secondary'}>
               {currentGroup.role === 'admin' ? (
                 <><Crown className="h-3 w-3 mr-1" /> Admin</>
