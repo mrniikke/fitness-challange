@@ -10,6 +10,7 @@ import { Users, Plus, Copy, Crown, User, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateGroupDialog from "./CreateGroupDialog";
 import JoinGroupDialog from "./JoinGroupDialog";
+import InviteButton from "./InviteButton";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
@@ -176,16 +177,26 @@ const GroupDashboard = () => {
                         <span className="text-sm text-muted-foreground">
                           Invite: {group.invite_code}
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyInviteCode(group.invite_code);
-                          }}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyInviteCode(group.invite_code);
+                            }}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <InviteButton 
+                              groupName={group.name}
+                              inviteCode={group.invite_code}
+                              variant="ghost"
+                              size="sm"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -233,17 +244,25 @@ const GroupDashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-foreground mb-1">Invite Code</h3>
+                <h3 className="font-semibold text-foreground mb-1">Invite Friends</h3>
                 <p className="text-sm text-muted-foreground">
-                  Share this code with friends to invite them
+                  Share your group and grow your challenge community
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <code className="bg-muted px-3 py-2 rounded font-mono text-sm">
-                  {currentGroup.invite_code}
+                <InviteButton 
+                  groupName={currentGroup.name}
+                  inviteCode={currentGroup.invite_code}
+                />
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <div className="flex items-center justify-between">
+                <code className="text-sm font-mono">
+                  Invite Code: {currentGroup.invite_code}
                 </code>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => copyInviteCode(currentGroup.invite_code)}
                 >
