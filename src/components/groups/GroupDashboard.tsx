@@ -207,7 +207,7 @@ const GroupDashboard = () => {
                   <div className="space-y-2">
                     <h3 className="font-semibold text-foreground">Create a Group</h3>
                     <p className="text-sm text-muted-foreground">
-                      Start a new push-up challenge with friends
+                      Start a new fitness challenge with friends
                     </p>
                   </div>
                   <CreateGroupDialog onGroupCreated={handleGroupCreated} />
