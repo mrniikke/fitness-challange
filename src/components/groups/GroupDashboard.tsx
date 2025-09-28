@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
 import { useNotifications } from "@/hooks/useNotifications";
-import { Users, Plus, Copy, Crown, User, Target, Star, Skull } from "lucide-react";
+import { Users, Plus, Copy, Crown, User, Target, Star, Skull, Calendar, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateGroupDialog from "./CreateGroupDialog";
 import JoinGroupDialog from "./JoinGroupDialog";
@@ -64,6 +64,22 @@ const GroupDashboard = () => {
         variant: "destructive",
       });
     }
+  };
+
+  // Helper function to calculate countdown for groups with time limits
+  const getCountdown = () => {
+    if (!currentGroup?.end_date) return null;
+    
+    const now = new Date();
+    const endDate = new Date(currentGroup.end_date);
+    const timeDiff = endDate.getTime() - now.getTime();
+    
+    if (timeDiff <= 0) return { expired: true };
+    
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    return { days, hours, expired: false };
   };
 
   // Helper function to get local date string (not affected by timezone conversion to UTC)
@@ -379,6 +395,42 @@ const GroupDashboard = () => {
             );
           })}
         </div>
+
+        {/* Countdown Timer for Groups with Time Limits */}
+        {currentGroup.end_date && (
+          <Card className="border-0 bg-gradient-card shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-center gap-3">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div className="text-center">
+                  {(() => {
+                    const countdown = getCountdown();
+                    if (!countdown) return null;
+                    
+                    if (countdown.expired) {
+                      return (
+                        <div className="text-sm">
+                          <span className="font-medium text-destructive">Challenge Expired</span>
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div className="text-sm">
+                        <span className="font-medium text-foreground">
+                          {countdown.days} day{countdown.days !== 1 ? 's' : ''}
+                          {countdown.hours > 0 && `, ${countdown.hours} hour${countdown.hours !== 1 ? 's' : ''}`}
+                        </span>
+                        <span className="text-muted-foreground"> remaining</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
 
         {/* Members Progress */}

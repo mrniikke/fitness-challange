@@ -22,6 +22,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [durationDays, setDurationDays] = useState("");
   const [challenges, setChallenges] = useState<Challenge[]>([{ name: "", goal_amount: 0 }]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -69,14 +70,21 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
       if (inviteError) throw inviteError;
       
       // Create group
+      const groupInsert: any = {
+        name: name.trim(),
+        description: description.trim() || null,
+        created_by: user.id,
+        invite_code: inviteData
+      };
+
+      // Add duration if specified
+      if (durationDays && parseInt(durationDays) > 0) {
+        groupInsert.duration_days = parseInt(durationDays);
+      }
+
       const { data: groupData, error: groupError } = await supabase
         .from('groups')
-        .insert({
-          name: name.trim(),
-          description: description.trim() || null,
-          created_by: user.id,
-          invite_code: inviteData
-        })
+        .insert(groupInsert)
         .select()
         .single();
 
@@ -113,6 +121,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
       
       setName("");
       setDescription("");
+      setDurationDays("");
       setChallenges([{ name: "", goal_amount: 0 }]);
       setOpen(false);
       onGroupCreated?.();
@@ -160,6 +169,22 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
               placeholder="Enter group description"
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="duration">Challenge Duration (Optional)</Label>
+            <Input
+              id="duration"
+              type="number"
+              value={durationDays}
+              onChange={(e) => setDurationDays(e.target.value)}
+              placeholder="Enter number of days (1-1000)"
+              min="1"
+              max="1000"
+            />
+            <p className="text-sm text-muted-foreground">
+              Leave empty for unlimited duration
+            </p>
           </div>
 
           <div className="space-y-2">

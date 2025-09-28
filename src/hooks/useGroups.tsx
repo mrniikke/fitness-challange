@@ -19,6 +19,8 @@ export interface Group {
   created_by: string;
   created_at: string;
   updated_at: string;
+  duration_days?: number | null;
+  end_date?: string | null;
   role?: 'admin' | 'member';
   member_count?: number;
   challenges?: GroupChallenge[];
@@ -85,7 +87,9 @@ export const useGroups = () => {
             invite_code,
             created_by,
             created_at,
-            updated_at
+            updated_at,
+            duration_days,
+            end_date
           )
         `)
         .eq('user_id', user.id);
