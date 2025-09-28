@@ -93,6 +93,8 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          duration_days: number | null
+          end_date: string | null
           id: string
           invite_code: string
           name: string
@@ -102,6 +104,8 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          duration_days?: number | null
+          end_date?: string | null
           id?: string
           invite_code: string
           name: string
@@ -111,6 +115,8 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          duration_days?: number | null
+          end_date?: string | null
           id?: string
           invite_code?: string
           name?: string
