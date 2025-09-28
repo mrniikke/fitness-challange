@@ -75,7 +75,7 @@ const AuthPage = () => {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            Fitness Challenger
+            Fitness challange
           </h1>
           <p className="text-muted-foreground">
             {isLogin ? "Welcome back!" : "Create your account"}
