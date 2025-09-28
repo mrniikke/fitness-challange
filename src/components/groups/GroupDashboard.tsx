@@ -182,7 +182,7 @@ const GroupDashboard = () => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">My Groups</h1>
+              <h1 className="text-3xl font-bold text-foreground">You are awesome</h1>
               <p className="text-muted-foreground">
                 Welcome back, {user?.email}!
               </p>
