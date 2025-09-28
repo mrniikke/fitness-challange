@@ -29,7 +29,7 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
   const { toast } = useToast();
 
   const addChallenge = () => {
-    if (challenges.length < 5) {
+    if (challenges.length < 10) {
       setChallenges([...challenges, { name: "", goal_amount: 0 }]);
     }
   };
@@ -189,13 +189,13 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Challenges ({challenges.length}/5)</Label>
+              <Label>Challenges ({challenges.length}/10)</Label>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={addChallenge}
-                disabled={challenges.length >= 5}
+                disabled={challenges.length >= 10}
               >
                 <Plus className="h-3 w-3" />
               </Button>
