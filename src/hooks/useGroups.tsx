@@ -96,9 +96,25 @@ export const useGroups = () => {
 
       if (memberError) throw memberError;
 
+      // Get member counts for each group
+      const groupIds = memberGroups?.map(mg => mg.groups.id) || [];
+      const { data: memberCounts, error: countError } = await supabase
+        .from('group_members')
+        .select('group_id')
+        .in('group_id', groupIds);
+
+      if (countError) throw countError;
+
+      // Count members for each group
+      const memberCountMap = (memberCounts || []).reduce((acc, member) => {
+        acc[member.group_id] = (acc[member.group_id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
       const formattedGroups = memberGroups?.map(mg => ({
         ...mg.groups,
-        role: mg.role as 'admin' | 'member'
+        role: mg.role as 'admin' | 'member',
+        member_count: memberCountMap[mg.groups.id] || 0
       })) as Group[];
 
       setGroups(formattedGroups || []);
