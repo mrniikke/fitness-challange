@@ -14,6 +14,7 @@ import JoinGroupDialog from "./JoinGroupDialog";
 import InviteButton from "./InviteButton";
 import SwipeableGroupCard from "./SwipeableGroupCard";
 import NotificationPanel from "../notifications/NotificationPanel";
+import AdBanner from "../ads/AdBanner";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
@@ -258,6 +259,9 @@ const GroupDashboard = () => {
               </div>
             )}
           </div>
+
+          {/* Ad Banner */}
+          <AdBanner position="bottom" className="mt-6" />
         </div>
       </div>
     );
@@ -495,6 +499,9 @@ const GroupDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Ad Banner */}
+        <AdBanner position="bottom" className="mt-6" />
       </div>
     </div>
   );
