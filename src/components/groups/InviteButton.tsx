@@ -20,7 +20,7 @@ const InviteButton = ({ groupName, inviteCode, variant = "default", size = "defa
   const [isSharing, setIsSharing] = useState(false);
   const { toast } = useToast();
 
-  const inviteMessage = `🏋️ Join my push-up challenge "${groupName}"! 
+  const inviteMessage = `🏋️ Join my fitness challenge "${groupName}"! 
 
 Use invite code: ${inviteCode}
 
@@ -36,7 +36,7 @@ Join here: ${inviteUrl}`;
       setIsSharing(true);
       try {
         await navigator.share({
-          title: `Join "${groupName}" Push-up Challenge`,
+          title: `Join "${groupName}" Fitness Challenge`,
           text: inviteMessage,
           url: inviteUrl,
         });
@@ -75,7 +75,7 @@ Join here: ${inviteUrl}`;
   };
 
   const handleEmailShare = () => {
-    const subject = encodeURIComponent(`Join my push-up challenge "${groupName}"`);
+    const subject = encodeURIComponent(`Join my fitness challenge "${groupName}"`);
     const body = encodeURIComponent(fullInviteMessage);
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
