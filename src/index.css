@@ -6,14 +6,14 @@
 
 @layer base {
   :root {
-    /* Base colors - clean whites and soft greys */
-    --background: 0 0% 100%;
+    /* Base colors - themed backgrounds for Theme 5 (Retro Gaming) */
+    --background: 0 30% 98%;
     --foreground: 215 25% 14%;
 
-    /* Card system - subtle elevation */
-    --card: 0 0% 100%;
+    /* Card system - subtle elevation with theme tint */
+    --card: 0 20% 99%;
     --card-foreground: 215 25% 14%;
-    --card-soft: 210 40% 98%;
+    --card-soft: 0 40% 96%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 14%;
@@ -50,10 +50,10 @@
 
     --radius: 1rem;
 
-    /* Gradients for subtle visual interest */
-    --gradient-primary: linear-gradient(135deg, hsl(213, 93%, 68%), hsl(213, 93%, 78%));
-    --gradient-success: linear-gradient(135deg, hsl(142, 76%, 65%), hsl(142, 76%, 75%));
-    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%), hsl(210, 40%, 99%));
+    /* Gradients for subtle visual interest - Theme 5 colors */
+    --gradient-primary: linear-gradient(135deg, hsl(0, 100%, 60%), hsl(0, 100%, 70%));
+    --gradient-success: linear-gradient(135deg, hsl(120, 100%, 50%), hsl(120, 100%, 60%));
+    --gradient-card: linear-gradient(180deg, hsl(0, 20%, 99%), hsl(0, 30%, 97%));
 
     /* Shadows for depth */
     --shadow-soft: 0 1px 3px 0 hsl(215, 25%, 14% / 0.05);
