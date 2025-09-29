@@ -18,10 +18,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 14%;
 
-    /* Theme 1: 🔥 Fire Energy Theme - energetic orange-red */
-    --primary: 14 100% 57%;
+    /* Theme 2: 🌈 Vibrant Gradient Theme - colorful and modern */
+    --primary: 225 100% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 14 100% 95%;
+    --primary-soft: 225 100% 95%;
 
     /* Secondary - neutral greys */
     --secondary: 210 40% 96%;
@@ -31,13 +31,13 @@
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    /* Accent - energetic lime green */
-    --accent: 84 81% 44%;
+    /* Accent - hot pink */
+    --accent: 330 100% 60%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 84 81% 95%;
+    --accent-soft: 330 100% 95%;
 
-    /* Star - bright yellow */
-    --star: 48 100% 50%;
+    /* Star - golden yellow */
+    --star: 48 100% 60%;
     --star-foreground: 0 0% 0%;
 
     /* System colors */
