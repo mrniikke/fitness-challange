@@ -56,13 +56,13 @@ const AdBanner = ({ position = 'bottom', className = '' }: AdBannerProps) => {
     };
   }, [position]);
 
-  // Don't render anything on web or if there's an error
-  if (!Capacitor.isNativePlatform() || error) {
+  // Show placeholder on web, return null only if there's an error
+  if (error) {
     return null;
   }
 
   // For web preview, show a placeholder
-  if (!isAdLoaded && !Capacitor.isNativePlatform()) {
+  if (!Capacitor.isNativePlatform()) {
     return (
       <div className={`bg-muted border border-border rounded-lg p-4 text-center ${className}`}>
         <div className="text-muted-foreground text-sm">
