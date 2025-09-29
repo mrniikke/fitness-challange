@@ -6,22 +6,22 @@
 
 @layer base {
   :root {
-    /* Base colors - Athletic Purple themed backgrounds */
-    --background: 270 25% 97%;
+    /* Base colors - Fire Energy themed backgrounds */
+    --background: 14 25% 97%;
     --foreground: 215 25% 14%;
 
-    /* Card system - subtle elevation with purple theme tint */
-    --card: 270 20% 98%;
+    /* Card system - subtle elevation with orange theme tint */
+    --card: 14 20% 98%;
     --card-foreground: 215 25% 14%;
-    --card-soft: 270 35% 95%;
+    --card-soft: 14 35% 95%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 14%;
 
-    /* Theme 3: 🏃‍♂️ Athletic Purple Theme - professional yet energetic */
-    --primary: 270 60% 50%;
+    /* Theme 1: 🔥 Fire Energy Theme - energetic orange-red */
+    --primary: 14 100% 57%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 270 60% 95%;
+    --primary-soft: 14 100% 95%;
 
     /* Secondary - neutral greys */
     --secondary: 210 40% 96%;
@@ -31,13 +31,13 @@
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    /* Accent - electric green */
-    --accent: 120 100% 50%;
+    /* Accent - energetic lime green */
+    --accent: 84 81% 44%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 120 100% 95%;
+    --accent-soft: 84 81% 95%;
 
-    /* Star - amber */
-    --star: 45 100% 50%;
+    /* Star - bright yellow */
+    --star: 48 100% 50%;
     --star-foreground: 0 0% 0%;
 
     /* System colors */
@@ -50,10 +50,10 @@
 
     --radius: 1rem;
 
-    /* Gradients for subtle visual interest - Theme 3 colors */
-    --gradient-primary: linear-gradient(135deg, hsl(270, 60%, 60%), hsl(270, 60%, 70%));
-    --gradient-success: linear-gradient(135deg, hsl(120, 100%, 55%), hsl(120, 100%, 65%));
-    --gradient-card: linear-gradient(180deg, hsl(270, 20%, 98%), hsl(270, 25%, 96%));
+    /* Gradients for subtle visual interest - Theme 1 colors */
+    --gradient-primary: linear-gradient(135deg, hsl(14, 100%, 65%), hsl(14, 100%, 75%));
+    --gradient-success: linear-gradient(135deg, hsl(84, 81%, 54%), hsl(84, 81%, 64%));
+    --gradient-card: linear-gradient(180deg, hsl(14, 20%, 98%), hsl(14, 25%, 96%));
 
     /* Shadows for depth */
     --shadow-soft: 0 1px 3px 0 hsl(215, 25%, 14% / 0.05);
