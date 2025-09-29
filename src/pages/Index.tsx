@@ -4,7 +4,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import GroupDashboard from "@/components/groups/GroupDashboard";
-import AdBanner from "@/components/ads/AdBanner";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -36,7 +35,6 @@ const Index = () => {
       ) : (
         <WelcomeScreen />
       )}
-      <AdBanner position="bottom" />
     </div>
   );
 };

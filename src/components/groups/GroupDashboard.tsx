@@ -231,6 +231,9 @@ const GroupDashboard = () => {
             </Card>
           </div>
 
+          {/* Ad Banner */}
+          <AdBanner position="bottom" className="my-6" />
+
           {/* Groups List */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-foreground">Your Groups</h2>
