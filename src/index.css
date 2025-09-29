@@ -18,10 +18,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 14%;
 
-    /* Theme 3: 🏃‍♂️ Athletic Purple Theme - professional yet energetic */
-    --primary: 270 60% 50%;
+    /* Theme 4: 🌊 Ocean Vibes Theme - fresh and motivating */
+    --primary: 200 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 270 60% 95%;
+    --primary-soft: 200 100% 95%;
 
     /* Secondary - neutral greys */
     --secondary: 210 40% 96%;
@@ -31,14 +31,14 @@
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    /* Accent - electric green */
-    --accent: 120 100% 50%;
+    /* Accent - tropical teal */
+    --accent: 180 100% 40%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 120 100% 95%;
+    --accent-soft: 180 100% 95%;
 
-    /* Star - amber */
-    --star: 45 100% 50%;
-    --star-foreground: 0 0% 0%;
+    /* Star - coral */
+    --star: 16 100% 66%;
+    --star-foreground: 0 0% 100%;
 
     /* System colors */
     --destructive: 0 84% 60%;
