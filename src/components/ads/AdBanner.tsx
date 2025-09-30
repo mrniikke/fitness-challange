@@ -13,7 +13,7 @@ const AdBanner = ({ position = 'bottom', className = '' }: AdBannerProps) => {
 
   // Test Ad Unit IDs (replace with your real ones in production)
   const AD_UNIT_ID = Capacitor.getPlatform() === 'ios' 
-    ? 'ca-app-pub-3940256099942544/2934735716' // iOS test banner
+    ? 'ca-app-pub-5029794477992220/2828872802' // iOS test banner
     : 'ca-app-pub-3940256099942544/6300978111'; // Android test banner
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const AdBanner = ({ position = 'bottom', className = '' }: AdBannerProps) => {
           adSize: BannerAdSize.BANNER,
           position: position === 'top' ? BannerAdPosition.TOP_CENTER : BannerAdPosition.BOTTOM_CENTER,
           margin: 0,
-          isTesting: true, // Set to false in production
+          isTesting: false, // Set to false in production
         });
 
         setIsAdLoaded(true);
