@@ -21,7 +21,7 @@ For each platform, create a banner ad unit:
 2. Click "Add ad unit"
 3. Select "Banner"
 4. Name: "iOS Banner Ad"
-5. Copy the Ad unit ID (starts with `ca-app-pub-`)
+5. Copy the Ad unit ID (starts with `ca-app-pub-5029794477992220~6768117812`)
 
 ### Android Banner Ad Unit:
 1. Go to your Android app → Ad units  
