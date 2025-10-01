@@ -15,6 +15,7 @@ import InviteButton from "./InviteButton";
 import SwipeableGroupCard from "./SwipeableGroupCard";
 import NotificationPanel from "../notifications/NotificationPanel";
 import AdBanner from "../ads/AdBanner";
+import MemberProgressDialog from "./MemberProgressDialog";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
@@ -23,6 +24,7 @@ const GroupDashboard = () => {
   const [showGroupList, setShowGroupList] = useState(true);
   const [pushupInputs, setPushupInputs] = useState<{[challengeId: string]: string}>({});
   const [isLogging, setIsLogging] = useState<{[challengeId: string]: boolean}>({});
+  const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -460,10 +462,13 @@ const GroupDashboard = () => {
                   <div key={member.id} className="space-y-2">
                      <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                         <span className="font-medium text-foreground">
+                         <button 
+                           onClick={() => setSelectedMember(member)}
+                           className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer underline decoration-dotted"
+                         >
                            {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
                            {isCurrentUser && " (You)"}
-                         </span>
+                         </button>
                          <div className="flex items-center gap-1">
                            <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
                              {member.role === 'admin' ? (
@@ -505,6 +510,20 @@ const GroupDashboard = () => {
 
         {/* Ad Banner */}
         <AdBanner position="bottom" className="mt-6" />
+
+        {/* Member Progress Dialog */}
+        {selectedMember && (
+          <MemberProgressDialog
+            open={!!selectedMember}
+            onOpenChange={(open) => !open && setSelectedMember(null)}
+            memberName={selectedMember.profiles?.display_name || selectedMember.profiles?.username || 'Unknown User'}
+            challenges={challenges}
+            memberLogs={pushupLogs.filter(log => 
+              log.user_id === selectedMember.user_id && 
+              log.log_date === getLocalDateString()
+            )}
+          />
+        )}
       </div>
     </div>
   );
