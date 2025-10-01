@@ -12,6 +12,7 @@ interface Challenge {
 interface PushupLog {
   challenge_id?: string | null;
   pushups: number;
+  log_date: string;
 }
 
 interface MemberProgressDialogProps {
@@ -20,6 +21,7 @@ interface MemberProgressDialogProps {
   memberName: string;
   challenges: Challenge[];
   memberLogs: PushupLog[];
+  groupStartDate: string;
 }
 
 const MemberProgressDialog = ({
@@ -28,20 +30,49 @@ const MemberProgressDialog = ({
   memberName,
   challenges,
   memberLogs,
+  groupStartDate,
 }: MemberProgressDialogProps) => {
-  // Get progress for a specific challenge
+  // Helper to get today's date string
+  const getLocalDateString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = getLocalDateString();
+
+  // Get progress for a specific challenge (today only)
   const getProgressForChallenge = (challengeId: string) => {
-    const log = memberLogs.find(log => log.challenge_id === challengeId);
+    const log = memberLogs.find(log => 
+      log.challenge_id === challengeId && 
+      log.log_date === today
+    );
     return log?.pushups || 0;
   };
 
-  // Filter out logs without challenge_id for overall calculation
-  const validLogs = memberLogs.filter(log => log.challenge_id);
+  // Filter today's logs for overall calculation
+  const todayLogs = memberLogs.filter(log => log.challenge_id && log.log_date === today);
 
-  // Calculate overall progress
-  const totalCompleted = validLogs.reduce((sum, log) => sum + log.pushups, 0);
+  // Calculate overall progress (today)
+  const totalCompleted = todayLogs.reduce((sum, log) => sum + log.pushups, 0);
   const totalGoal = challenges.reduce((sum, challenge) => sum + challenge.goal_amount, 0);
   const overallPercentage = totalGoal > 0 ? Math.round((totalCompleted / totalGoal) * 100) : 0;
+
+  // Calculate historical totals (all time)
+  const allTimeLogs = memberLogs.filter(log => log.challenge_id);
+  const totalHistoricalPushups = allTimeLogs.reduce((sum, log) => sum + log.pushups, 0);
+  
+  // Calculate days active
+  const uniqueDates = new Set(memberLogs.map(log => log.log_date));
+  const daysActive = uniqueDates.size;
+
+  // Format group start date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -85,10 +116,10 @@ const MemberProgressDialog = ({
             );
           })}
           
-          {/* Overall Progress Summary */}
+          {/* Overall Progress Summary (Today) */}
           <div className="pt-4 border-t">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-semibold">Overall Progress</h4>
+              <h4 className="text-sm font-semibold">Overall Progress (Today)</h4>
               <span className="text-sm font-medium">
                 {totalCompleted}/{totalGoal}
               </span>
@@ -98,6 +129,28 @@ const MemberProgressDialog = ({
               <p className="text-xs text-muted-foreground text-right">
                 {overallPercentage}% complete
               </p>
+            </div>
+          </div>
+
+          {/* Historical Total Summary */}
+          <div className="pt-4 border-t bg-muted/30 -mx-6 px-6 pb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">📊</span>
+              <h4 className="text-sm font-semibold">Historical Total (All Time)</h4>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Total Pushups Logged:</span>
+                <span className="text-2xl font-bold text-primary">{totalHistoricalPushups}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Since:</span>
+                <span>{formatDate(groupStartDate)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Days Active:</span>
+                <span className="font-medium">{daysActive} day{daysActive !== 1 ? 's' : ''}</span>
+              </div>
             </div>
           </div>
         </div>

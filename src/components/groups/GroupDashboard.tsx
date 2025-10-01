@@ -518,10 +518,8 @@ const GroupDashboard = () => {
             onOpenChange={(open) => !open && setSelectedMember(null)}
             memberName={selectedMember.profiles?.display_name || selectedMember.profiles?.username || 'Unknown User'}
             challenges={challenges}
-            memberLogs={pushupLogs.filter(log => 
-              log.user_id === selectedMember.user_id && 
-              log.log_date === getLocalDateString()
-            )}
+            memberLogs={pushupLogs.filter(log => log.user_id === selectedMember.user_id)}
+            groupStartDate={currentGroup.created_at}
           />
         )}
       </div>
