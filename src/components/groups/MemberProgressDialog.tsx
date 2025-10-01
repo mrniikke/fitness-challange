@@ -140,7 +140,7 @@ const MemberProgressDialog = ({
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total Pushups Logged:</span>
+                <span className="text-sm text-muted-foreground">Total Reps Logged:</span>
                 <span className="text-2xl font-bold text-primary">{totalHistoricalPushups}</span>
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
