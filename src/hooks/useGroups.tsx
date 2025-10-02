@@ -177,7 +177,8 @@ export const useGroups = () => {
       // Combine member data with push-up data and completion status
       const membersWithPushups = (data || []).map(member => {
         const memberLogs = logsData?.filter(log => log.user_id === member.user_id) || [];
-        const todayPushups = memberLogs.reduce((sum, log) => sum + log.pushups, 0);
+        // Only sum today's logs for the progress bar display
+        const todayPushups = memberLogs.filter(log => log.log_date === today).reduce((sum, log) => sum + log.pushups, 0);
         
         let completionStatus: 'completed' | 'failed' | 'pending' = 'pending';
         
