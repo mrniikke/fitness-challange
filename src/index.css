@@ -2,82 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Push-up Challenger Design System - Calming, minimalist mobile app */
+/* Push-up Challenger Design System - Energy Burst Theme */
 
 @layer base {
   :root {
-    /* Base colors - Fire Energy themed backgrounds */
-    --background: 14 25% 97%;
-    --foreground: 215 25% 14%;
+    /* Base colors - Deep charcoal dark theme */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 100%;
 
-    /* Card system - subtle elevation with orange theme tint */
-    --card: 14 20% 98%;
-    --card-foreground: 215 25% 14%;
-    --card-soft: 14 35% 95%;
+    /* Card system - elevated dark cards */
+    --card: 0 0% 15%;
+    --card-foreground: 0 0% 100%;
+    --card-soft: 0 0% 18%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 14%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Theme 1: 🔥 Fire Energy Theme - energetic orange-red */
-    --primary: 14 100% 57%;
+    /* Primary - Vibrant coral-orange */
+    --primary: 14 100% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 14 100% 95%;
+    --primary-soft: 14 100% 20%;
 
-    /* Secondary - neutral greys */
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 25% 14%;
+    /* Secondary - Warm amber for progress */
+    --secondary: 25 95% 55%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Muted - subtle text and backgrounds */
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted - subtle grays for less important content */
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 60%;
 
-    /* Accent - energetic lime green */
-    --accent: 84 81% 44%;
-    --accent-foreground: 0 0% 100%;
-    --accent-soft: 84 81% 95%;
+    /* Accent - Electric cyan for highlights */
+    --accent: 190 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --accent-soft: 190 100% 20%;
 
-    /* Star - bright yellow */
-    --star: 48 100% 50%;
+    /* Star - Golden yellow for achievements */
+    --star: 45 100% 55%;
     --star-foreground: 0 0% 0%;
 
     /* System colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 213 93% 68%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 190 100% 50%;
 
     --radius: 1rem;
 
-    /* Gradients for subtle visual interest - Theme 1 colors */
-    --gradient-primary: linear-gradient(135deg, hsl(14, 100%, 65%), hsl(14, 100%, 75%));
-    --gradient-success: linear-gradient(135deg, hsl(84, 81%, 54%), hsl(84, 81%, 64%));
-    --gradient-card: linear-gradient(180deg, hsl(14, 20%, 98%), hsl(14, 25%, 96%));
+    /* Gradients for energy and progress */
+    --gradient-primary: linear-gradient(135deg, hsl(14, 100%, 65%), hsl(25, 100%, 65%));
+    --gradient-accent: linear-gradient(135deg, hsl(190, 100%, 50%), hsl(190, 100%, 40%));
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 15%), hsl(0, 0%, 12%));
 
-    /* Shadows for depth */
-    --shadow-soft: 0 1px 3px 0 hsl(215, 25%, 14% / 0.05);
-    --shadow-medium: 0 4px 6px -1px hsl(215, 25%, 14% / 0.07);
-    --shadow-large: 0 10px 15px -3px hsl(215, 25%, 14% / 0.08);
+    /* Shadows for depth on dark background */
+    --shadow-soft: 0 1px 3px 0 hsl(0, 0%, 0% / 0.3);
+    --shadow-medium: 0 4px 6px -1px hsl(0, 0%, 0% / 0.4);
+    --shadow-large: 0 10px 15px -3px hsl(0, 0%, 0% / 0.5);
 
     /* Transitions */
     --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 12%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 14 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 190 100% 50%;
   }
 
   .dark {
