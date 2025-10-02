@@ -155,13 +155,13 @@ export const useGroups = () => {
       
       setChallenges(challengesData || []);
       
-      // Fetch today's push-up logs for all members with completion data
+      // Fetch ALL push-up logs for all members (for historical tracking)
       const today = getLocalDateString();
       const { data: logsData, error: logsError } = await supabase
         .from('pushup_logs')
         .select('*')
         .eq('group_id', groupId)
-        .eq('log_date', today);
+        .order('log_date', { ascending: false });
 
       if (logsError) throw logsError;
 
