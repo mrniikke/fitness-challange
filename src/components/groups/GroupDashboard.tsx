@@ -462,13 +462,14 @@ const GroupDashboard = () => {
                   <div key={member.id} className="space-y-2">
                      <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                         <button 
-                           onClick={() => setSelectedMember(member)}
-                           className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer underline decoration-dotted"
-                         >
-                           {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
-                           {isCurrentUser && " (You)"}
-                         </button>
+                          <button 
+                            onClick={() => setSelectedMember(member)}
+                            className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer underline decoration-dotted"
+                          >
+                            {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
+                            {member.showSkull && ' 💀'}
+                            {isCurrentUser && " (You)"}
+                          </button>
                          <div className="flex items-center gap-1">
                            <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
                              {member.role === 'admin' ? (

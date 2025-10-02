@@ -47,6 +47,7 @@ export interface GroupMember {
   todayPushups?: number;
   completionStatus?: 'completed' | 'failed' | 'pending';
   isFirstFinisher?: boolean;
+  showSkull?: boolean;
 }
 
 export interface PushupLog {
@@ -174,6 +175,11 @@ export const useGroups = () => {
       const now = new Date();
       const dayEnded = false; // For now, we'll calculate status in real-time
 
+      // Get yesterday's date
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayString = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
       // Combine member data with push-up data and completion status
       const membersWithPushups = (data || []).map(member => {
         const memberLogs = logsData?.filter(log => log.user_id === member.user_id) || [];
@@ -184,7 +190,7 @@ export const useGroups = () => {
         
         // Check if user completed all challenges today
         const completedChallenges = (challengesData || []).filter(challenge => {
-          const challengeLog = memberLogs.find(log => log.challenge_id === challenge.id);
+          const challengeLog = memberLogs.find(log => log.challenge_id === challenge.id && log.log_date === today);
           return challengeLog && challengeLog.completed_at;
         });
         
@@ -203,6 +209,17 @@ export const useGroups = () => {
           }
         }
         
+        // Check if user failed yesterday (didn't complete all challenges)
+        const yesterdayLogs = memberLogs.filter(log => log.log_date === yesterdayString);
+        const yesterdayCompletedChallenges = (challengesData || []).filter(challenge => {
+          const challengeLog = yesterdayLogs.find(log => log.challenge_id === challenge.id);
+          return challengeLog && challengeLog.completed_at;
+        });
+        
+        // Show skull if they failed yesterday AND haven't completed all challenges today
+        const failedYesterday = (challengesData?.length || 0) > 0 && yesterdayCompletedChallenges.length < (challengesData?.length || 0);
+        const showSkull = failedYesterday && completionStatus !== 'completed';
+        
         // Check if this user was first to complete all challenges TODAY (not historically)
         const todayLogs = memberLogs.filter(log => log.log_date === today);
         const isFirstFinisher = todayLogs.some(log => log.is_first_finisher);
@@ -212,7 +229,8 @@ export const useGroups = () => {
           role: member.role as 'admin' | 'member',
           todayPushups,
           completionStatus,
-          isFirstFinisher
+          isFirstFinisher,
+          showSkull
         };
       });
 
