@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/useAuth";
 import { useGroups } from "@/hooks/useGroups";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -462,14 +463,29 @@ const GroupDashboard = () => {
                   <div key={member.id} className="space-y-2">
                      <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                          <button 
-                            onClick={() => setSelectedMember(member)}
-                            className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer underline decoration-dotted"
-                          >
-                            {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
-                            {member.showSkull && ' 💀'}
-                            {isCurrentUser && " (You)"}
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => setSelectedMember(member)}
+                              className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer underline decoration-dotted"
+                            >
+                              {member.profiles?.display_name || member.profiles?.username || 'Unknown User'}
+                              {isCurrentUser && " (You)"}
+                            </button>
+                            {member.showSkull && (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <button className="cursor-pointer hover:scale-110 transition-transform">
+                                    💀
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-64">
+                                  <p className="text-sm text-foreground">
+                                    You got this skull because of your laziness. Get rid of it by completing your challenges!
+                                  </p>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                          </div>
                          <div className="flex items-center gap-1">
                            <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
                              {member.role === 'admin' ? (
