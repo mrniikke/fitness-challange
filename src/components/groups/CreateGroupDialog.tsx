@@ -8,6 +8,36 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, X } from "lucide-react";
+import { z } from "zod";
+
+const challengeSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(1, "Challenge name required")
+    .max(100, "Challenge name must be less than 100 characters"),
+  goal_amount: z.number()
+    .int()
+    .min(1, "Goal must be at least 1")
+    .max(10000, "Goal seems unreasonably high")
+});
+
+const groupSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(3, "Group name must be at least 3 characters")
+    .max(100, "Group name must be less than 100 characters")
+    .regex(/^[a-zA-Z0-9\s\-_]+$/, "Only letters, numbers, spaces, hyphens and underscores allowed"),
+  description: z.string()
+    .max(500, "Description must be less than 500 characters")
+    .optional(),
+  durationDays: z.number()
+    .int()
+    .min(1)
+    .max(1000)
+    .optional(),
+  challenges: z.array(challengeSchema)
+    .min(1, "At least one challenge required")
+});
 
 interface Challenge {
   name: string;
@@ -48,22 +78,23 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!user || !name.trim()) return;
-
-    // Validate challenges
-    const validChallenges = challenges.filter(c => c.name.trim() && c.goal_amount > 0);
-    if (validChallenges.length === 0) {
-      toast({
-        title: "Invalid challenges",
-        description: "Please add at least one challenge with a name and goal.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!user) return;
 
     setLoading(true);
     
     try {
+      // Validate input
+      const validChallenges = challenges.filter(c => c.name.trim() && c.goal_amount > 0);
+      
+      const validationData = {
+        name,
+        description: description || undefined,
+        durationDays: durationDays ? parseInt(durationDays) : undefined,
+        challenges: validChallenges
+      };
+
+      groupSchema.parse(validationData);
+
       // Generate invite code
       const { data: inviteData, error: inviteError } = await supabase.rpc('generate_invite_code');
       
@@ -127,11 +158,20 @@ const CreateGroupDialog = ({ onGroupCreated }: CreateGroupDialogProps) => {
       onGroupCreated?.();
     } catch (error) {
       console.error('Error creating group:', error);
-      toast({
-        title: "Failed to create group",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      
+      if (error instanceof z.ZodError) {
+        toast({
+          variant: "destructive",
+          title: "Validation error",
+          description: error.issues[0].message,
+        });
+      } else {
+        toast({
+          title: "Failed to create group",
+          description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

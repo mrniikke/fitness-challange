@@ -15,7 +15,11 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
 const joinSchema = z.object({
-  inviteCode: z.string().min(1, "Please enter an invite code"),
+  inviteCode: z.string()
+    .trim()
+    .length(8, "Invite code must be 8 characters")
+    .regex(/^[A-Z0-9]+$/i, "Invalid invite code format")
+    .transform(val => val.toUpperCase()),
 });
 
 interface JoinGroupDialogProps {
@@ -35,13 +39,13 @@ const JoinGroupDialog = ({ onGroupJoined }: JoinGroupDialogProps) => {
 
     setLoading(true);
     try {
-      joinSchema.parse({ inviteCode });
+      const validated = joinSchema.parse({ inviteCode });
 
-      // Find group by invite code
+      // Find group by invite code using secure RPC function
       const { data: groupData, error: groupError } = await supabase
-        .from('groups')
-        .select('*')
-        .eq('invite_code', inviteCode.toUpperCase())
+        .rpc('get_group_by_invite', { 
+          invite_code_param: validated.inviteCode 
+        })
         .maybeSingle();
 
       if (groupError) throw groupError;

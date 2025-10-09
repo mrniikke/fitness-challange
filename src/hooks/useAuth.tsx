@@ -26,7 +26,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-        console.log('Auth state change:', event, session ? 'user authenticated' : 'user signed out');
+        if (import.meta.env.DEV) {
+          console.log('Auth state change:', event, session ? 'user authenticated' : 'user signed out');
+        }
         setSession(session);
         setUser(session?.user ?? null);
         if (initialized) {
@@ -38,7 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
-      console.log('Initial session:', session ? 'user found' : 'no user');
+      if (import.meta.env.DEV) {
+        console.log('Initial session:', session ? 'user found' : 'no user');
+      }
       setSession(session);
       setUser(session?.user ?? null);
       initialized = true;

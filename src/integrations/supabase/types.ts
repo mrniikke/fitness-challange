@@ -211,9 +211,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_profile: {
+        Args: { profile_user_id: string }
+        Returns: boolean
+      }
       generate_invite_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_group_by_invite: {
+        Args: { invite_code_param: string }
+        Returns: {
+          description: string
+          id: string
+          member_count: number
+          name: string
+        }[]
       }
       is_group_admin_or_owner: {
         Args: { _group_id: string; _user_id: string }
