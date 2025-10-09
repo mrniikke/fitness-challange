@@ -41,10 +41,10 @@ const JoinGroupDialog = ({ onGroupJoined }: JoinGroupDialogProps) => {
     try {
       const validated = joinSchema.parse({ inviteCode });
 
-      // Find group by invite code using secure RPC function
+      // Use secure RPC function to find group by invite code
       const { data: groupData, error: groupError } = await supabase
-        .rpc('get_group_by_invite', { 
-          invite_code_param: validated.inviteCode 
+        .rpc('get_group_by_invite', {
+          invite_code_param: validated.inviteCode
         })
         .maybeSingle();
 
@@ -132,8 +132,9 @@ const JoinGroupDialog = ({ onGroupJoined }: JoinGroupDialogProps) => {
               id="inviteCode"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              placeholder="Enter invite code"
+              placeholder="Enter 8-character code"
               className="uppercase"
+              maxLength={8}
               required
             />
           </div>
