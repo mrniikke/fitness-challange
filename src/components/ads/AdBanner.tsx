@@ -28,7 +28,7 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
         // Initialize AdMob
         await AdMob.initialize({
           testingDevices: ["YOUR_DEVICE_ID"], // Add your test device ID
-          initializeForTesting: true,
+          initializeForTesting: false,
         });
 
         // Show banner ad
