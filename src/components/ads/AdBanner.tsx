@@ -15,7 +15,7 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
   const AD_UNIT_ID =
     Capacitor.getPlatform() === "ios"
       ? "ca-app-pub-5029794477992220/2828872802" // iOS test banner
-      : "ca-app-pub-5029794477992220/4638849745"; // Android test banner
+      : "ca-app-pub-5029794477992220/4772789104"; // Android test banner
 
   useEffect(() => {
     const initializeAd = async () => {
@@ -28,7 +28,7 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
         // Initialize AdMob
         await AdMob.initialize({
           testingDevices: ["YOUR_DEVICE_ID"], // Add your test device ID
-          initializeForTesting: true,
+          initializeForTesting: false,
         });
 
         // Show banner ad
