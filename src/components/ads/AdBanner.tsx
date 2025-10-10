@@ -11,11 +11,16 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
   const [isAdLoaded, setIsAdLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Test Ad Unit IDs (replace with your real ones in production)
+  // Platform-specific App IDs and Ad Unit IDs
+  const ADMOB_APP_ID =
+    Capacitor.getPlatform() === "ios"
+      ? "ca-app-pub-5029794477992220~6768117812" // iOS App ID
+      : "ca-app-pub-5029794477992220~4772789104"; // Android App ID
+
   const AD_UNIT_ID =
     Capacitor.getPlatform() === "ios"
-      ? "ca-app-pub-5029794477992220/2828872802" // Your iOS banner ad unit ID
-      : "ca-app-pub-5029794477992220/4638849745"; // Your Android banner ad unit ID
+      ? "ca-app-pub-5029794477992220/2828872802" // iOS banner ad unit ID
+      : "ca-app-pub-5029794477992220/4638849745"; // Android banner ad unit ID
 
   useEffect(() => {
     const initializeAd = async () => {
@@ -25,9 +30,9 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
           return;
         }
 
-        // Initialize AdMob
+        // Initialize AdMob with platform-specific App ID
         await AdMob.initialize({
-          testingDevices: ["YOUR_DEVICE_ID"], // Add your test device ID
+          testingDevices: [],
           initializeForTesting: false,
         });
 
