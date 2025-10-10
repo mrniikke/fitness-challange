@@ -14,8 +14,8 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
   // Test Ad Unit IDs (replace with your real ones in production)
   const AD_UNIT_ID =
     Capacitor.getPlatform() === "ios"
-      ? "ca-app-pub-5029794477992220/2828872802" // iOS test banner
-      : "ca-app-pub-5029794477992220/4638849745"; // Android test banner
+      ? "ca-app-pub-5029794477992220/2828872802" // Your iOS banner ad unit ID
+      : "ca-app-pub-5029794477992220/4638849745"; // Your Android banner ad unit ID
 
   useEffect(() => {
     const initializeAd = async () => {
