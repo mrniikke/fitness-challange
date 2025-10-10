@@ -11,6 +11,7 @@ import AuthPage from "./components/auth/AuthPage";
 import ThemePreview from "./pages/ThemePreview";
 import Support from "./pages/Support";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Marketing from "./pages/Marketing";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/theme-preview" element={<ThemePreview />} />
             <Route path="/support" element={<Support />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/marketing" element={<Marketing />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
