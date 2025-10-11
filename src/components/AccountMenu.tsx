@@ -40,7 +40,7 @@ const AccountMenu = ({ email, className }: AccountMenuProps) => {
 
   const handleDelete = async () => {
     try {
-      const { error } = await supabase.functions.invoke('delete-account', { body: {} });
+      const { error } = await supabase.functions.invoke('delete-account', { body: {}, headers: { 'Content-Type': 'application/json' } });
       if (error) {
         console.error('Failed to delete account:', error);
         throw error;
