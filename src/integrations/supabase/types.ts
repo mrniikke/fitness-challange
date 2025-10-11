@@ -215,6 +215,10 @@ export type Database = {
         Args: { profile_user_id: string }
         Returns: boolean
       }
+      delete_user_account: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_invite_code: {
         Args: Record<PropertyKey, never>
         Returns: string

@@ -38,7 +38,7 @@ const WelcomeScreen = () => {
 
   const handleDeleteAccount = async () => {
     try {
-      const { error } = await supabase.rpc('delete_user_account');
+      const { error } = await supabase.rpc('delete_user_account' as any);
       
       if (error) throw error;
 
