@@ -1,15 +1,60 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import heroFitness from "@/assets/hero-fitness.png";
 import CreateGroupDialog from "@/components/groups/CreateGroupDialog";
 import JoinGroupDialog from "@/components/groups/JoinGroupDialog";
 
 const WelcomeScreen = () => {
   const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const { error } = await supabase.rpc('delete_user_account');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Account deleted",
+        description: "Your account has been successfully deleted.",
+      });
+
+      await signOut();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete account. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -66,21 +111,56 @@ const WelcomeScreen = () => {
           </Card>
         </div>
 
-        {/* User Info & Sign Out */}
+        {/* User Info & Account Menu */}
         <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             Welcome, {user?.email}!
           </p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSignOut}
-            className="text-xs"
-          >
-            Sign Out
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="text-xs">
+                Account
+                <ChevronDown className="ml-2 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-48">
+              <DropdownMenuItem onClick={handleSignOut}>
+                Sign Out
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/support")}>
+                Support
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                Delete Account
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete your account? This action cannot be undone.
+              All your data, including groups and progress, will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
