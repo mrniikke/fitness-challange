@@ -40,11 +40,19 @@ const AccountMenu = ({ email, className }: AccountMenuProps) => {
 
   const handleDelete = async () => {
     try {
-      const { error } = await supabase.rpc("delete_user_account");
-      if (error) throw error;
-      toast({ title: "Account deleted", description: "Your account was removed." });
+      // Delete all user data from public tables (in correct order)
+      const { error: rpcError } = await supabase.rpc("delete_user_account");
+      if (rpcError) {
+        console.error('Failed to delete user data:', rpcError);
+        throw rpcError;
+      }
+
+      toast({ title: "Account deleted", description: "Your account and all data have been removed." });
+      
+      // Sign out (will redirect to login)
       await signOut();
     } catch (e) {
+      console.error('Account deletion error:', e);
       toast({ title: "Deletion failed", description: "Please try again.", variant: "destructive" });
     }
   };

@@ -39,17 +39,22 @@ const WelcomeScreen = () => {
 
   const handleDeleteAccount = async () => {
     try {
-      const { error } = await supabase.rpc('delete_user_account' as any);
-      
-      if (error) throw error;
+      // Delete all user data from public tables (in correct order)
+      const { error: rpcError } = await supabase.rpc("delete_user_account");
+      if (rpcError) {
+        console.error('Failed to delete user data:', rpcError);
+        throw rpcError;
+      }
 
       toast({
         title: "Account deleted",
-        description: "Your account has been successfully deleted.",
+        description: "Your account and all data have been removed.",
       });
 
+      // Sign out (will redirect to login)
       await signOut();
     } catch (error) {
+      console.error('Account deletion error:', error);
       toast({
         title: "Error",
         description: "Failed to delete account. Please try again.",
