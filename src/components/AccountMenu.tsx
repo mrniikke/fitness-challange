@@ -34,7 +34,17 @@ const AccountMenu = ({ email, className }: AccountMenuProps) => {
   const [openConfirm, setOpenConfirm] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+      toast({
+        title: "Sign out failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = async () => {

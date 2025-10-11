@@ -30,7 +30,17 @@ const GroupDashboard = () => {
   const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+      // Navigation will be handled by the auth state change
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+      toast({
+        title: "Sign out failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleGroupCreated = () => {
