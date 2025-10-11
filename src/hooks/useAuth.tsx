@@ -31,6 +31,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         setSession(session);
         setUser(session?.user ?? null);
+
+        // Redirect to login immediately on sign out to avoid race conditions
+        if (event === 'SIGNED_OUT') {
+          window.location.replace('/auth');
+          return;
+        }
+
         if (initialized) {
           setLoading(false);
         }

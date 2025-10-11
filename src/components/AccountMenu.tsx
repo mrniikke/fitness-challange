@@ -34,17 +34,8 @@ const AccountMenu = ({ email, className }: AccountMenuProps) => {
   const [openConfirm, setOpenConfirm] = useState(false);
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/auth');
-    } catch (error) {
-      console.error('Failed to sign out:', error);
-      toast({
-        title: "Sign out failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    }
+    await signOut();
+    // Redirect handled by Index route when user becomes null
   };
 
   const handleDelete = async () => {
