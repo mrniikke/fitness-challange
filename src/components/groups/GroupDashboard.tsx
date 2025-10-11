@@ -17,6 +17,7 @@ import SwipeableGroupCard from "./SwipeableGroupCard";
 import NotificationPanel from "../notifications/NotificationPanel";
 import AdBanner from "../ads/AdBanner";
 import MemberProgressDialog from "./MemberProgressDialog";
+import AccountMenu from "../AccountMenu";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
@@ -197,9 +198,7 @@ const GroupDashboard = () => {
                 onClear={clearNotifications}
                 onRemove={removeNotification}
               />
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                Sign Out
-              </Button>
+              <AccountMenu className="ml-2" />
             </div>
           </div>
 

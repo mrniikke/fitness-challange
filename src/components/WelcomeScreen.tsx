@@ -119,16 +119,16 @@ const WelcomeScreen = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="text-xs">
-                Account
+                Menu
                 <ChevronDown className="ml-2 h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-48 z-[100] bg-popover">
-              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                Sign Out
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/support")} className="cursor-pointer">
                 Support
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                Sign Out
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
