@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,28 @@ const GroupDashboard = () => {
   const [isLogging, setIsLogging] = useState<{[challengeId: string]: boolean}>({});
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const { toast } = useToast();
+  
+  // Swipe gesture handling
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+  
+  const handleTouchEnd = () => {
+    const swipeDistance = touchEndX.current - touchStartX.current;
+    const minSwipeDistance = 100; // minimum distance for swipe to register
+    
+    // Swipe right detected
+    if (swipeDistance > minSwipeDistance) {
+      setShowGroupList(true);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -284,7 +306,12 @@ const GroupDashboard = () => {
 
   // Group Detail View
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div 
+      className="min-h-screen bg-background p-4"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
