@@ -30,24 +30,31 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
           return;
         }
 
-        // Initialize AdMob with platform-specific App ID
+        // Initialize AdMob
         await AdMob.initialize({
           testingDevices: [],
           initializeForTesting: false,
         });
 
-        // Show banner ad
+        console.log("AdMob initialized successfully");
+        console.log("Using Ad Unit ID:", AD_UNIT_ID);
+        console.log("Platform:", Capacitor.getPlatform());
+
+        // Show banner ad with proper error handling
         await AdMob.showBanner({
           adId: AD_UNIT_ID,
           adSize: BannerAdSize.BANNER,
           position: position === "top" ? BannerAdPosition.TOP_CENTER : BannerAdPosition.BOTTOM_CENTER,
           margin: 0,
-          isTesting: false, // Set to false in production
+          isTesting: false,
         });
 
+        console.log("Banner ad requested successfully");
         setIsAdLoaded(true);
       } catch (err) {
-        console.error("AdMob initialization error:", err);
+        console.error("AdMob error details:", err);
+        console.error("Failed with Ad Unit ID:", AD_UNIT_ID);
+        console.error("Platform:", Capacitor.getPlatform());
         setError("Failed to load ad");
       }
     };
