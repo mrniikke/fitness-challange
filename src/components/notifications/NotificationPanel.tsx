@@ -62,7 +62,7 @@ const NotificationPanel = ({ notifications, onClear, onRemove }: NotificationPan
 
       {/* Notification Panel */}
       {isOpen && (
-        <Card className="absolute right-0 top-12 z-50 w-80 border-0 bg-card shadow-large">
+        <Card className="absolute right-0 top-12 z-50 w-[calc(100vw-2rem)] sm:w-80 max-w-80 border-0 bg-card shadow-large">
           <CardHeader className="border-b border-border pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm">
