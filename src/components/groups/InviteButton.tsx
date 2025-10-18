@@ -20,16 +20,30 @@ const InviteButton = ({ groupName, inviteCode, variant = "default", size = "defa
   const [isSharing, setIsSharing] = useState(false);
   const { toast } = useToast();
 
+  // Detect platform for deep links
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  // App Store URLs
+  const iosAppStoreUrl = "https://apps.apple.com/se/app/fitness-challenge-motivation/id6753872961";
+  const androidStoreUrl = "ANDROID_DEEPLINK_PLACEHOLDER"; // TODO: Update with Play Store URL
+
+  // Deep link URL - opens app if installed, otherwise redirects to store
+  const deepLinkUrl = isIOS 
+    ? `https://34a82439-52a4-461b-8505-c66db6d63a2f.lovableproject.com/?invite=${inviteCode}&fallback=${encodeURIComponent(iosAppStoreUrl)}`
+    : isAndroid
+    ? `https://34a82439-52a4-461b-8505-c66db6d63a2f.lovableproject.com/?invite=${inviteCode}&fallback=${encodeURIComponent(androidStoreUrl)}`
+    : `${window.location.origin}/?invite=${inviteCode}`;
+
   const inviteMessage = `🏋️ Join my fitness challenge "${groupName}"! 
 
 Use invite code: ${inviteCode}
 
 Let's get fit together! 💪`;
 
-  const inviteUrl = `${window.location.origin}/?invite=${inviteCode}`;
   const fullInviteMessage = `${inviteMessage}
 
-Join here: ${inviteUrl}`;
+Join here: ${deepLinkUrl}`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -38,7 +52,7 @@ Join here: ${inviteUrl}`;
         await navigator.share({
           title: `Join "${groupName}" Fitness Challenge`,
           text: inviteMessage,
-          url: inviteUrl,
+          url: deepLinkUrl,
         });
         toast({
           title: "Shared successfully!",
