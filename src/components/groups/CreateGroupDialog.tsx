@@ -26,7 +26,7 @@ const groupSchema = z.object({
     .trim()
     .min(3, "Group name must be at least 3 characters")
     .max(100, "Group name must be less than 100 characters")
-    .regex(/^[a-zA-Z0-9\s\-_]+$/, "Only letters, numbers, spaces, hyphens and underscores allowed"),
+    .regex(/^[a-zA-ZåäöÅÄÖ0-9\s\-_]+$/, "Only letters, numbers, spaces, hyphens and underscores allowed"),
   description: z.string()
     .max(500, "Description must be less than 500 characters")
     .optional(),
