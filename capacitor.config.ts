@@ -9,10 +9,6 @@ const config: CapacitorConfig = {
     cleartext: true,
   },
   plugins: {
-    AdMob: {
-      appId: "ca-app-pub-5029794477992220~6768117812", // Your AdMob App ID
-      testingDevices: ["YOUR_TEST_DEVICE_ID"], // Optional
-    },
     SplashScreen: {
       launchShowDuration: 2000,
       backgroundColor: "#000000",

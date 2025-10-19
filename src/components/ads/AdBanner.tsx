@@ -11,6 +11,7 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
   const [isAdLoaded, setIsAdLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // AdMob Publisher ID: pub-5029794477992220
   // Platform-specific App IDs and Ad Unit IDs
   const ADMOB_APP_ID =
     Capacitor.getPlatform() === "ios"
@@ -27,8 +28,14 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
       try {
         // Only show ads on mobile platforms
         if (!Capacitor.isNativePlatform()) {
+          console.log("Not a native platform, skipping AdMob");
           return;
         }
+
+        console.log("Initializing AdMob...");
+        console.log("Platform:", Capacitor.getPlatform());
+        console.log("App ID:", ADMOB_APP_ID);
+        console.log("Ad Unit ID:", AD_UNIT_ID);
 
         // Initialize AdMob
         await AdMob.initialize({
@@ -37,10 +44,8 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
         });
 
         console.log("AdMob initialized successfully");
-        console.log("Using Ad Unit ID:", AD_UNIT_ID);
-        console.log("Platform:", Capacitor.getPlatform());
 
-        // Show banner ad with proper error handling
+        // Show banner ad
         await AdMob.showBanner({
           adId: AD_UNIT_ID,
           adSize: BannerAdSize.BANNER,
@@ -52,9 +57,8 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
         console.log("Banner ad requested successfully");
         setIsAdLoaded(true);
       } catch (err) {
-        console.error("AdMob error details:", err);
-        console.error("Failed with Ad Unit ID:", AD_UNIT_ID);
-        console.error("Platform:", Capacitor.getPlatform());
+        console.error("AdMob error:", err);
+        console.error("Error details:", JSON.stringify(err, null, 2));
         setError("Failed to load ad");
       }
     };
@@ -67,9 +71,9 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
         AdMob.hideBanner().catch(console.error);
       }
     };
-  }, [position]);
+  }, [position, AD_UNIT_ID, ADMOB_APP_ID]);
 
-  // Show placeholder on web, return null only if there's an error
+  // Don't show anything if there's an error
   if (error) {
     return null;
   }
@@ -85,12 +89,11 @@ const AdBanner = ({ position = "bottom", className = "" }: AdBannerProps) => {
   }
 
   // On mobile, the ad is rendered natively by AdMob
-  // We return a small spacer to account for the ad space
+  // Return a spacer to account for the ad space
   return (
     <div
       className={`${position === "top" ? "h-12" : "h-16"} ${className}`}
       style={{
-        // Reserve space for the banner ad
         minHeight: position === "top" ? "50px" : "60px",
       }}
     />
