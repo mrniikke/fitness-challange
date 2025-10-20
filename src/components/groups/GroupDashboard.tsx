@@ -31,23 +31,34 @@ const GroupDashboard = () => {
   // Swipe gesture handling
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const isSwiping = useRef<boolean>(false);
   
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+    const startX = e.touches[0].clientX;
+    touchStartX.current = startX;
+    touchEndX.current = startX;
+    // Only enable swipe if starting from the left edge (first 50px)
+    isSwiping.current = startX < 50;
   };
   
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
+    if (isSwiping.current) {
+      touchEndX.current = e.touches[0].clientX;
+    }
   };
   
   const handleTouchEnd = () => {
+    if (!isSwiping.current) return;
+    
     const swipeDistance = touchEndX.current - touchStartX.current;
     const minSwipeDistance = 100; // minimum distance for swipe to register
     
-    // Swipe right detected
+    // Swipe right detected - only if we moved significantly
     if (swipeDistance > minSwipeDistance) {
       setShowGroupList(true);
     }
+    
+    isSwiping.current = false;
   };
 
   const handleSignOut = async () => {
