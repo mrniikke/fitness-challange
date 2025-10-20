@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import heroFitness from "@/assets/hero-fitness.png";
 import CreateGroupDialog from "@/components/groups/CreateGroupDialog";
 import JoinGroupDialog from "@/components/groups/JoinGroupDialog";
+import AdBanner from "@/components/ads/AdBanner";
 
 const WelcomeScreen = () => {
   const { signOut, user } = useAuth();
@@ -116,6 +117,9 @@ const WelcomeScreen = () => {
           </Card>
         </div>
 
+        {/* Ad Banner */}
+        <AdBanner position="bottom" />
+
         {/* User Info & Account Menu */}
         <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground">
@@ -141,12 +145,15 @@ const WelcomeScreen = () => {
               >
                 Delete Account
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      {/* Bottom Ad Banner */}
+      <AdBanner position="bottom" />
+    </div>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Account</AlertDialogTitle>
