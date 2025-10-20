@@ -17,6 +17,7 @@ import SwipeableGroupCard from "./SwipeableGroupCard";
 import NotificationPanel from "../notifications/NotificationPanel";
 import MemberProgressDialog from "./MemberProgressDialog";
 import AccountMenu from "../AccountMenu";
+import AdBanner from "../ads/AdBanner";
 
 const GroupDashboard = () => {
   const { signOut, user } = useAuth();
@@ -303,6 +304,9 @@ const GroupDashboard = () => {
               </div>
             )}
           </div>
+
+          {/* Ad Banner */}
+          <AdBanner position="bottom" className="mt-6" />
         </div>
       </div>
     );
@@ -576,6 +580,9 @@ const GroupDashboard = () => {
             groupStartDate={currentGroup.created_at}
           />
         )}
+
+        {/* Ad Banner */}
+        <AdBanner position="bottom" className="mt-6" />
       </div>
     </div>
   );
