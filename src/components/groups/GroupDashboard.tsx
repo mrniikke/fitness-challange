@@ -15,7 +15,6 @@ import JoinGroupDialog from "./JoinGroupDialog";
 import InviteButton from "./InviteButton";
 import SwipeableGroupCard from "./SwipeableGroupCard";
 import NotificationPanel from "../notifications/NotificationPanel";
-import AdBanner from "../ads/AdBanner";
 import MemberProgressDialog from "./MemberProgressDialog";
 import AccountMenu from "../AccountMenu";
 
@@ -265,9 +264,6 @@ const GroupDashboard = () => {
             </Card>
           </div>
 
-          {/* Ad Banner */}
-          <AdBanner position="bottom" className="my-6" />
-
           {/* Groups List */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-foreground">Your Groups</h2>
@@ -296,9 +292,6 @@ const GroupDashboard = () => {
               </div>
             )}
           </div>
-
-          {/* Ad Banner */}
-          <AdBanner position="bottom" className="mt-6" />
         </div>
       </div>
     );
@@ -560,9 +553,6 @@ const GroupDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Ad Banner */}
-        <AdBanner position="bottom" className="mt-6" />
 
         {/* Member Progress Dialog */}
         {selectedMember && (
