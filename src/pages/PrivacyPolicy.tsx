@@ -40,9 +40,47 @@ const PrivacyPolicy = () => {
           </section>
 
           <section>
+            <h2 className="text-2xl font-semibold mb-3">Advertising and Analytics</h2>
+            <p className="text-muted-foreground mb-2">
+              We use Google AdMob to display advertisements in our app. AdMob automatically collects certain information about you and your device, including:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+              <li>Device identifiers (IDFA on iOS, Advertising ID on Android)</li>
+              <li>IP address and approximate location</li>
+              <li>Device information (model, operating system version, screen size)</li>
+              <li>Ad interaction data (ad views, clicks, and conversions)</li>
+              <li>App usage information (session duration, frequency of use)</li>
+              <li>Precise location data (only if you grant permission)</li>
+            </ul>
+            <p className="text-muted-foreground mt-2 mb-2">
+              This information is used to:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+              <li>Serve personalized advertisements</li>
+              <li>Measure ad performance and effectiveness</li>
+              <li>Prevent fraud and improve ad security</li>
+              <li>Provide analytics about ad engagement</li>
+            </ul>
+            <p className="text-muted-foreground mt-2">
+              For more information about how Google uses data, please visit Google's Privacy Policy at <a href="https://policies.google.com/privacy" className="text-primary underline" target="_blank" rel="noopener noreferrer">https://policies.google.com/privacy</a>
+            </p>
+            <p className="text-muted-foreground mt-2">
+              You can opt out of personalized advertising by adjusting your device settings (iOS: Settings → Privacy → Tracking; Android: Settings → Google → Ads → Opt out of Ads Personalization).
+            </p>
+          </section>
+
+          <section>
             <h2 className="text-2xl font-semibold mb-3">Data Sharing</h2>
-            <p className="text-muted-foreground">
-              We do not sell your personal information. Your activity data may be visible to other members of groups you join. We may share aggregated, anonymized data for analytical purposes.
+            <p className="text-muted-foreground mb-2">
+              We do not sell your personal information. We may share your information with:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+              <li>Other members of groups you join (activity data only)</li>
+              <li>Google AdMob and its advertising partners (device and usage data for ad purposes)</li>
+              <li>Service providers who help us operate our app</li>
+            </ul>
+            <p className="text-muted-foreground mt-2">
+              We may share aggregated, anonymized data for analytical purposes.
             </p>
           </section>
 
