@@ -1,0 +1,180 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import heroFitness from "@/assets/hero-fitness.png";
+import CreateGroupDialog from "@/components/groups/CreateGroupDialog";
+import JoinGroupDialog from "@/components/groups/JoinGroupDialog";
+import AdBanner from "@/components/ads/AdBanner";
+
+const WelcomeScreen = () => {
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    // Redirect handled by Index route when user becomes null
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const { error } = await supabase.functions.invoke('delete-account', { body: {}, headers: { 'Content-Type': 'application/json' } });
+      if (error) {
+        console.error('Failed to delete account:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Account deleted",
+        description: "Your account and all data have been removed.",
+      });
+
+      // Sign out (will redirect to login)
+      await signOut();
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete account. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-8">
+        {/* Hero Section */}
+        <div className="text-center space-y-6">
+          <div className="mx-auto w-full max-w-sm">
+            <img 
+              src={heroFitness} 
+              alt="Push-up Challenger - Fitness motivation"
+              className="w-full h-auto rounded-2xl shadow-soft"
+            />
+          </div>
+          
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold text-foreground">
+              Fitness Challenge
+            </h1>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Challenge friends, track progress, and stay motivated together
+            </p>
+          </div>
+        </div>
+
+        {/* Action Cards */}
+        <div className="space-y-4">
+          <Card className="border-0 bg-gradient-card shadow-medium">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">Create a Group</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Start a new challenge with your friends
+                  </p>
+                </div>
+                <CreateGroupDialog />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 bg-gradient-card shadow-medium">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">Join a Group</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Join your friends' challenge with an invite code
+                  </p>
+                </div>
+                <JoinGroupDialog />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Ad Banner */}
+        <AdBanner position="bottom" />
+
+        {/* User Info & Account Menu */}
+        <div className="text-center space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Welcome, {user?.email}!
+          </p>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="text-xs">
+                Menu
+                <ChevronDown className="ml-2 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-48 z-[100] bg-popover">
+              <DropdownMenuItem onClick={() => navigate("/support")} className="cursor-pointer">
+                Support
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                Sign Out
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                Delete Account
+              </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Bottom Ad Banner */}
+      <AdBanner position="bottom" />
+    </div>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete your account? This action cannot be undone.
+              All your data, including groups and progress, will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default WelcomeScreen;
