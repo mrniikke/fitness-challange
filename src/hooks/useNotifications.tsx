@@ -21,9 +21,9 @@ export const useNotifications = (currentGroupId?: string) => {
   useEffect(() => {
     if (!user || !currentGroupId) return;
 
-    // Subscribe to new group members
+    // Subscribe to new group members with unique channel name
     const memberChannel = supabase
-      .channel('group-member-changes')
+      .channel(`group-members-${currentGroupId}`)
       .on(
         'postgres_changes',
         {
@@ -70,9 +70,9 @@ export const useNotifications = (currentGroupId?: string) => {
       )
       .subscribe();
 
-    // Subscribe to pushup log changes
+    // Subscribe to pushup log changes with unique channel name
     const pushupChannel = supabase
-      .channel('pushup-log-changes')
+      .channel(`pushup-logs-${currentGroupId}`)
       .on(
         'postgres_changes',
         {
