@@ -211,18 +211,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_view_profile: {
-        Args: { profile_user_id: string }
-        Returns: boolean
-      }
-      delete_user_account: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      generate_invite_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      can_view_profile: { Args: { profile_user_id: string }; Returns: boolean }
+      delete_user_account: { Args: never; Returns: undefined }
+      generate_invite_code: { Args: never; Returns: string }
       get_group_by_invite: {
         Args: { invite_code_param: string }
         Returns: {
@@ -240,10 +231,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
-      sync_missing_profiles: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      sync_missing_profiles: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
