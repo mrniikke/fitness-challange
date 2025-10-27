@@ -21,6 +21,8 @@ export const useNotifications = (currentGroupId?: string) => {
   useEffect(() => {
     if (!user || !currentGroupId) return;
 
+    console.log('🔔 Setting up notifications for group:', currentGroupId, 'user:', user.id);
+
     // Subscribe to new group members with unique channel name
     const memberChannel = supabase
       .channel(`group-members-${currentGroupId}`)
@@ -33,8 +35,12 @@ export const useNotifications = (currentGroupId?: string) => {
           filter: `group_id=eq.${currentGroupId}`
         },
         async (payload) => {
+          console.log('🔔 Group member INSERT event:', payload);
           // Don't notify about own actions
-          if ((payload.new as any)?.user_id === user.id) return;
+          if ((payload.new as any)?.user_id === user.id) {
+            console.log('🔔 Ignoring own member join');
+            return;
+          }
 
           // Get user profile info
           const { data: profile } = await supabase
@@ -65,6 +71,7 @@ export const useNotifications = (currentGroupId?: string) => {
             userName
           };
 
+          console.log('🔔 Added member notification:', notification);
           setNotifications(prev => [notification, ...prev].slice(0, 10)); // Keep last 10
         }
       )
@@ -82,8 +89,12 @@ export const useNotifications = (currentGroupId?: string) => {
           filter: `group_id=eq.${currentGroupId}`
         },
         async (payload) => {
+          console.log('🔔 Pushup log event:', payload.eventType, payload);
           // Don't notify about own actions
-          if ((payload.new as any)?.user_id === user.id || (payload.old as any)?.user_id === user.id) return;
+          if ((payload.new as any)?.user_id === user.id || (payload.old as any)?.user_id === user.id) {
+            console.log('🔔 Ignoring own pushup action');
+            return;
+          }
 
           const isInsert = payload.eventType === 'INSERT';
           const isUpdate = payload.eventType === 'UPDATE';
@@ -149,13 +160,17 @@ export const useNotifications = (currentGroupId?: string) => {
           }
 
           if (notification) {
+            console.log('🔔 Added pushup notification:', notification);
             setNotifications(prev => [notification!, ...prev].slice(0, 10)); // Keep last 10
           }
         }
       )
       .subscribe();
 
+    console.log('🔔 Subscribed to channels for group:', currentGroupId);
+
     return () => {
+      console.log('🔔 Cleaning up notification channels for group:', currentGroupId);
       supabase.removeChannel(memberChannel);
       supabase.removeChannel(pushupChannel);
     };
