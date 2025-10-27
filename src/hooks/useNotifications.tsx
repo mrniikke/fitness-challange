@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export interface GroupNotification {
   id: string;
-  type: 'member_joined' | 'pushups_logged' | 'goal_completed';
+  type: 'member_joined' | 'pushups_logged' | 'goal_completed' | 'challenge_reminder';
   title: string;
   message: string;
   timestamp: Date;
@@ -12,6 +12,7 @@ export interface GroupNotification {
   groupName: string;
   userId?: string;
   userName?: string;
+  read?: boolean;
 }
 
 export const useNotifications = (currentGroupId?: string) => {
@@ -22,6 +23,40 @@ export const useNotifications = (currentGroupId?: string) => {
     if (!user || !currentGroupId) return;
 
     console.log('🔔 Setting up notifications for group:', currentGroupId, 'user:', user.id);
+
+    // Load existing scheduled notifications
+    const loadScheduledNotifications = async () => {
+      const { data, error } = await supabase
+        .from('scheduled_notifications')
+        .select('*')
+        .eq('group_id', currentGroupId)
+        .eq('read', false)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error loading scheduled notifications:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const scheduledNotifs: GroupNotification[] = data.map(notif => ({
+          id: notif.id,
+          type: notif.notification_type as any,
+          title: notif.title,
+          message: notif.message,
+          timestamp: new Date(notif.created_at),
+          groupId: notif.group_id || currentGroupId,
+          groupName: '',
+          read: notif.read
+        }));
+        
+        console.log('📬 Loaded scheduled notifications:', scheduledNotifs);
+        setNotifications(prev => [...scheduledNotifs, ...prev]);
+      }
+    };
+
+    loadScheduledNotifications();
 
     // Subscribe to new group members with unique channel name
     const memberChannel = supabase
@@ -167,12 +202,47 @@ export const useNotifications = (currentGroupId?: string) => {
       )
       .subscribe();
 
+    // Subscribe to scheduled notifications with unique channel name
+    const scheduledChannel = supabase
+      .channel(`scheduled-notifications-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'scheduled_notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔔 New scheduled notification:', payload);
+          const notif = payload.new as any;
+          
+          if (notif.group_id === currentGroupId) {
+            const notification: GroupNotification = {
+              id: notif.id,
+              type: notif.notification_type,
+              title: notif.title,
+              message: notif.message,
+              timestamp: new Date(notif.created_at),
+              groupId: notif.group_id,
+              groupName: '',
+              read: notif.read
+            };
+            
+            console.log('📬 Added scheduled notification:', notification);
+            setNotifications(prev => [notification, ...prev].slice(0, 10));
+          }
+        }
+      )
+      .subscribe();
+
     console.log('🔔 Subscribed to channels for group:', currentGroupId);
 
     return () => {
       console.log('🔔 Cleaning up notification channels for group:', currentGroupId);
       supabase.removeChannel(memberChannel);
       supabase.removeChannel(pushupChannel);
+      supabase.removeChannel(scheduledChannel);
     };
   }, [user, currentGroupId]);
 
@@ -180,8 +250,17 @@ export const useNotifications = (currentGroupId?: string) => {
     setNotifications([]);
   };
 
-  const removeNotification = (id: string) => {
+  const removeNotification = async (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
+    
+    // Mark scheduled notification as read in database
+    const notif = notifications.find(n => n.id === id);
+    if (notif?.type === 'challenge_reminder') {
+      await supabase
+        .from('scheduled_notifications')
+        .update({ read: true })
+        .eq('id', id);
+    }
   };
 
   return {

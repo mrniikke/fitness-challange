@@ -137,6 +137,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          timezone: string | null
           updated_at: string
           user_id: string
           username: string | null
@@ -145,6 +146,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          timezone?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -153,6 +155,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          timezone?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
@@ -205,6 +208,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scheduled_notifications: {
+        Row: {
+          created_at: string | null
+          group_id: string | null
+          id: string
+          message: string
+          notification_type: string
+          read: boolean | null
+          sent_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          message: string
+          notification_type?: string
+          read?: boolean | null
+          sent_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          message?: string
+          notification_type?: string
+          read?: boolean | null
+          sent_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

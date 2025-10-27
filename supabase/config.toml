@@ -1,4 +1,7 @@
 project_id = "rtjyffmaldxhcrgippxn"
 
+[functions.send-challenge-reminders]
+verify_jwt = false
+
 [functions.delete-account]
 verify_jwt = true
