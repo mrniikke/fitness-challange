@@ -111,14 +111,65 @@ Deno.serve(async (req) => {
                 .single();
               
               if (!existingNotification) {
-                // Create notification
+                // Get user's push tokens
+                const { data: pushTokens } = await supabase
+                  .from('user_push_tokens')
+                  .select('player_id')
+                  .eq('user_id', profile.user_id);
+
+                const title = '💪 Challenge Reminder';
+                const message = `Get up and be awesome. There is still time to complete your challenges in ${groupName}!`;
+                
+                // Send push notification via OneSignal if we have tokens
+                if (pushTokens && pushTokens.length > 0) {
+                  const playerIds = pushTokens.map(t => t.player_id);
+                  
+                  try {
+                    const oneSignalAppId = Deno.env.get('ONESIGNAL_APP_ID');
+                    const oneSignalApiKey = Deno.env.get('ONESIGNAL_REST_API_KEY');
+                    
+                    if (!oneSignalAppId || !oneSignalApiKey) {
+                      console.error('OneSignal credentials not configured');
+                    } else {
+                      const response = await fetch('https://onesignal.com/api/v1/notifications', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Basic ${oneSignalApiKey}`,
+                        },
+                        body: JSON.stringify({
+                          app_id: oneSignalAppId,
+                          include_player_ids: playerIds,
+                          headings: { en: title },
+                          contents: { en: message },
+                          data: {
+                            group_id: groupId,
+                            notification_type: 'challenge_reminder'
+                          }
+                        }),
+                      });
+                      
+                      if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error(`OneSignal API error: ${response.status} - ${errorText}`);
+                      } else {
+                        const result = await response.json();
+                        console.log(`✅ Push notification sent to ${playerIds.length} device(s):`, result);
+                      }
+                    }
+                  } catch (pushError) {
+                    console.error('Error sending push notification:', pushError);
+                  }
+                }
+                
+                // Create in-app notification
                 const { error: notifError } = await supabase
                   .from('scheduled_notifications')
                   .insert({
                     user_id: profile.user_id,
                     group_id: groupId,
-                    title: '💪 Challenge Reminder',
-                    message: `Get up and be awesome. There is still time to complete your challenges in ${groupName}!`,
+                    title,
+                    message,
                     notification_type: 'challenge_reminder',
                     read: false
                   });
