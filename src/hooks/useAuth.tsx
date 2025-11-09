@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
-    const redirectUrl = `${window.location.origin}/thank_you`;
+    const redirectUrl = "https://preview--fitness-challange.lovable.app/thank_you";
     
     const { error } = await supabase.auth.signUp({
       email,

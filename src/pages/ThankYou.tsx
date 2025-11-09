@@ -1,6 +1,7 @@
 import { App } from '@capacitor/app';
 import { Button } from '@/components/ui/button';
-
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 const ThankYou = () => {
   const handleBackToApp = async () => {
     try {
@@ -11,6 +12,30 @@ const ThankYou = () => {
       window.close();
     }
   };
+
+  useEffect(() => {
+    const handleAuthCallback = async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+
+        if (code) {
+          await supabase.auth.exchangeCodeForSession(code);
+        } else if (window.location.hash.includes('access_token') && window.location.hash.includes('refresh_token')) {
+          const params = new URLSearchParams(window.location.hash.substring(1));
+          const access_token = params.get('access_token') ?? '';
+          const refresh_token = params.get('refresh_token') ?? '';
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token });
+          }
+        }
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('Auth callback handling failed', e);
+      }
+    };
+
+    handleAuthCallback();
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
