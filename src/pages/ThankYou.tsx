@@ -18,15 +18,23 @@ const ThankYou = () => {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get('code');
+        const token_hash = url.searchParams.get('token_hash');
+        const type = url.searchParams.get('type');
 
         if (code) {
-          await supabase.auth.exchangeCodeForSession(code);
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (import.meta.env.DEV && error) console.error('exchangeCodeForSession error', error);
+        } else if (token_hash && type) {
+          // Handle email confirmation links (e.g., type=signup)
+          const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any });
+          if (import.meta.env.DEV && error) console.error('verifyOtp error', error);
         } else if (window.location.hash.includes('access_token') && window.location.hash.includes('refresh_token')) {
           const params = new URLSearchParams(window.location.hash.substring(1));
           const access_token = params.get('access_token') ?? '';
           const refresh_token = params.get('refresh_token') ?? '';
           if (access_token && refresh_token) {
-            await supabase.auth.setSession({ access_token, refresh_token });
+            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (import.meta.env.DEV && error) console.error('setSession error', error);
           }
         }
       } catch (e) {
